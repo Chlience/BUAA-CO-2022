@@ -1,4 +1,8 @@
 `define PCInitial   (32'h00003000)
+`define A1          25:21
+`define A2          20:16
+`define A3          15:11
+
 `define OPTION1     31:26
 `define OPTION2     5:0
 `define SPECIAL     (6'b000000)
