@@ -32,9 +32,6 @@ module MIPS_TB();
         reset = 1;
         #12; // phase: 2ns
         reset = 0;
-        
-        #200;
-        $finish;
     end
     
     always #5 clk = ~clk; // 10ns for a circle

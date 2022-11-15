@@ -23,7 +23,7 @@
 module ALU(
     input   [31:0]  v1,     // value
     input   [31:0]  v2,
-    input   [15:0]  imm,    // immediate number
+    input   [15:0]  imm16,    // immediate number
     input   [3:0]   opt,    // option
     output  [31:0]  res,    // result
     output          overf   // overflow
@@ -43,7 +43,15 @@ module ALU(
                 overflow    = (result[32] != result[31]);
             end
             4'd2: begin
-                result      = {1'b0, imm, 16'b0};
+                result      = {1'b0, v1} & {17'b0, imm16};
+                overflow    = 1'b0;
+            end
+            4'd3: begin
+                result      = {1'b0, v1} | {17'b0, imm16};
+                overflow    = 1'b0;
+            end
+            4'd4: begin
+                result      = {1'b0, imm16, 16'b0};
                 overflow    = 1'b0;
             end
             default: begin
