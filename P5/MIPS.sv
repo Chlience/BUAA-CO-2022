@@ -109,8 +109,8 @@ module MIPS(
     IM  IM_0(.pc(pcIF), .instr(instrIF));
     NPC NPC_0(.pc(pcIF), .npc(npcIF));
     
-    // Instruction Fetch TO Register Read
-    // Instruction Fetch TO Register Read
+    // Instruction Fetch to Register Read
+    // Instruction Fetch to Register Read
     
     logic   [31:0]  pcIF2RR;
     logic   [31:0]  instrIF2RR;
@@ -254,8 +254,8 @@ module MIPS(
         end
     end
     
-    // Register Read TO Execute
-    // Register Read TO Execute
+    // Register Read to Execute
+    // Register Read to Execute
     
     logic   [31:0]  pcRR2EX;
     logic   [31:0]  instrRR2EX;
@@ -381,11 +381,12 @@ module MIPS(
     end
     
     // Execute to Data Memory (EX2DM)
+    // Execute to Data Memory (EX2DM)
     
     logic   [31:0]  pcEX2DM;
     logic   [31:0]  instrEX2DM;
     always@(posedge clk) begin // pc, instrution
-        if(reset || Stall) begin
+        if(reset) begin
             pcEX2DM     <= 32'd0;
             instrEX2DM  <= 32'd0;
         end
@@ -398,7 +399,7 @@ module MIPS(
     logic   [1:0]   tNewEX2DM;
     logic   [31:0]  vNewEX2DM;
     always@(posedge clk) begin // aNew, tNew, vNew
-        if(reset || Stall) begin
+        if(reset) begin
             aNewEX2DM   <= 5'd0;
             tNewEX2DM   <= 2'd0;
             vNewEX2DM   <= 32'd0; 
@@ -412,7 +413,7 @@ module MIPS(
     logic   [31:0]  v2EX2DM;
     logic   [31:0]  vEX2DM;
     always@(posedge clk) begin // other register
-        if(reset || Stall) begin
+        if(reset) begin
             v2EX2DM <= 32'd0;
             vEX2DM  <= 32'd0;
         end
@@ -483,7 +484,7 @@ module MIPS(
     logic   [31:0]  pcDM2RW; */
     logic   [31:0]  instrDM2RW;
     always@(posedge clk) begin // pc, instruction
-        if(reset || Stall) begin
+        if(reset) begin
             pcDM2RW     <= 32'd0;
             instrDM2RW  <= 32'd0;
         end
@@ -496,7 +497,7 @@ module MIPS(
     logic   [1:0]   tNewDM2RW;
     logic   [31:0]  vNewDM2RW;
     always@(posedge clk) begin // aNew, tNew, vNew
-        if(reset || Stall) begin
+        if(reset) begin
             aNewDM2RW   <= 5'd0;
             tNewDM2RW   <= 2'd0;
             vNewDM2RW   <= 32'd0;
@@ -509,7 +510,7 @@ module MIPS(
     end
     logic   [31:0]  vDM2RW;
     always@(posedge clk) begin // other register
-        if(reset || Stall)
+        if(reset)
             vDM2RW  <= 32'd0;
         else
             vDM2RW  <= vDM;
