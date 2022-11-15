@@ -109,10 +109,13 @@ module MIPS(
     logic   [31:0]  instrIF;
     logic   npcEnIF;
     assign  npcEnIF = ~ Stall;
+
+    logic   [31:0]  jpcRR;
+    logic           jpcEnRR;
     
     PC  PC_0(.clk(clk), .reset(reset), .pc(pcIF), .npc(npcIF), .npcEn(npcEnIF));
     IM  IM_0(.pc(pcIF), .instr(instrIF));
-    NPC NPC_0(.pc(pcIF), .npc(npcIF));
+    NPC NPC_0(.pc(pcIF), .npc(npcIF), .jpc(jpcRR), .jpcEn(jpcEnRR));
     
     // Instruction Fetch to Register Read
     // Instruction Fetch to Register Read
@@ -158,6 +161,12 @@ module MIPS(
             t1Use = 2'd1;
             t2Use = 2'd0;
         end
+        else if(`BEQ_RR) begin
+            a1Use = instrIF2RR[`A1];
+            a2Use = instrIF2RR[`A2];
+            t1Use = 2'd0;
+            t2Use = 2'd0;
+        end
         else begin
             a1Use = 5'd0;
             a2Use = 5'd0;
@@ -184,6 +193,7 @@ module MIPS(
     .wData(wDataGrfRW), .wEn(wEnGrfRW),
     .v1(v1GrfRR), .v2(v2GrfRR),
     .pc(pcDM2RW));
+    
     
     logic   [4:0]   a1RR, a2RR;
     logic   [31:0]  v1RR, v2RR;
@@ -212,6 +222,21 @@ module MIPS(
                 v2RR = v2GrfRR;
         end
         else v2RR = v2GrfRR;
+    end
+
+    /* Declare move to IF
+    logic   [31:0]  jpcRR;
+    logic           jpcEnRR;
+    */
+    always@(*) begin
+        if(`BEQ_RR) begin
+            jpcRR   = pcIF + {{14{instrIF2RR[15]}}, instrIF2RR[`IMM16], 2'b00}; // following the branch
+            jpcEnRR = (v1RR == v2RR);
+        end
+        else begin
+            jpcRR   = 32'b0;
+            jpcEnRR = 1'b0;
+        end
     end
 
     logic   [4:0]   aNewRR;

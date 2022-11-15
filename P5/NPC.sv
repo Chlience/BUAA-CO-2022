@@ -22,7 +22,9 @@
 
 module NPC(
     input   [31:0]  pc,
+    input   [31:0]  jpc,
+    input           jpcEn,
     output  [31:0]  npc
     );
-    assign npc = pc + 32'h00000004;
+    assign npc = jpcEn ? jpc : (pc + 32'h00000004);
 endmodule

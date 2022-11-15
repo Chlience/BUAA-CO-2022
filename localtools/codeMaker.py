@@ -11,9 +11,16 @@ def readFile(filePath):
 
 instrList = []
 instrList.append(ori(1, 0, 0b1))
-instrList.append(sw(1, 4, 0))
-instrList.append(lw(2, 4, 0))
-instrList.append(add(2, 2, 2))
+instrList.append(beq(1, 0, 2))
+instrList.append(nop())
+instrList.append(nop())
+instrList.append(nop())
+instrList.append(nop())
+instrList.append(beq(0, 0, 4))
+instrList.append(nop())
+instrList.append(nop())
+instrList.append(nop())
+instrList.append(nop())
 
 codePath = "../P5/data/code.txt"
 codeText = "\n".join([f"{instr:0>8x}" for instr in instrList])

@@ -49,3 +49,10 @@
 `define ORI_EX      (instrRR2EX[`OPTION1] == `ORI)
 `define ORI_DM      (instrEX2DM[`OPTION1] == `ORI)
 `define ORI_RW      (instrDM2RW[`OPTION1] == `ORI)
+
+`define BEQ         (6'b000100)
+`define BEQ_IF      (instrIF[`OPTION1]    == `BEQ)
+`define BEQ_RR      (instrIF2RR[`OPTION1] == `BEQ)
+`define BEQ_EX      (instrRR2EX[`OPTION1] == `BEQ)
+`define BEQ_DM      (instrEX2DM[`OPTION1] == `BEQ)
+`define BEQ_RW      (instrDM2RW[`OPTION1] == `BEQ)

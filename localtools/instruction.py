@@ -28,3 +28,8 @@ def sw(rt, offset, base):
     OPTION1 = 0b101011
     binString = f"{OPTION1:0>6b}{base:0>5b}{rt:0>5b}{offset:0>16b}"
     return int(binString, 2)
+
+def beq(rs, rt, offset):
+    OPTION1 = 0b000100
+    binString = f"{OPTION1:0>6b}{rs:0>5b}{rt:0>5b}{offset:0>16b}"
+    return int(binString, 2)
