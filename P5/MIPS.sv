@@ -28,71 +28,76 @@ module MIPS(
     // AT Stall
     // AT Stall
     
-    logic   [4:0]   a1UseRR, a2UseRR;
-    logic   [1:0]   t1UseRR, t2UseRR;
-    logic   [4:0]   aNewRR, aNewEX, aNewDM, aNewRW;
-    logic   [1:0]   tNewRR, tNewEX, tNewDM, tNewRW;
-    logic   [31:0]  vNewRR, vNewEX, vNewDM, vNewRW;
+    logic   [4:0]   a1Use, a2Use;
+    logic   [1:0]   t1Use, t2Use;
+    logic   [4:0]   aNewRR2EX, aNewEX2DM, aNewDM2RW;
+    logic   [1:0]   tNewRR2EX, tNewEX2DM, tNewDM2RW;
+    logic   [31:0]  vNewRR2EX, vNewEX2DM, vNewDM2RW;
     
     logic   Stall;
     logic   a1Stall, a2Stall;
-    logic   a1StallEX, a2StallEX;
-    logic   a1StallDM, a2StallDM;
-    logic   a1StallRW, a2StallRW;
+    logic   a1StallRR2EX, a2StallRR2EX;
+    logic   a1StallEX2DM, a2StallEX2DM;
+    logic   a1StallDM2RW, a2StallDM2RW;
     
     always@(*) begin // Stall
-        if(a1UseRR != 0) begin
-            if(a1UseRR == aNewEX) begin
-                a1StallEX = (t1UseRR < tNewEX);
-                a1StallDM = 1'd0;
-                a1StallRW = 1'd0;
-            end if(a1UseRR == aNewDM) begin
-                a1StallEX = 1'd0;    
-                a1StallDM = (t1UseRR < tNewDM);
-                a1StallRW = 1'd0;
-            end if(a1UseRR == aNewRW) begin
-                a1StallDM = 1'd0;
-                a1StallEX = 1'd0;
-                a1StallRW = (t1UseRR < tNewRW);
+        if(a1Use != 0) begin
+            if(a1Use == aNewRR2EX) begin
+                $display("%d", (t1Use < tNewRR2EX));
+                a1StallRR2EX = (t1Use < tNewRR2EX);
+                a1StallEX2DM = 1'd0;
+                a1StallDM2RW = 1'd0;
+            end
+            else if(a1Use == aNewEX2DM) begin
+                a1StallRR2EX = 1'd0;    
+                a1StallEX2DM = (t1Use < tNewEX2DM);
+                a1StallDM2RW = 1'd0;
+            end
+            else if(a1Use == aNewDM2RW) begin
+                a1StallRR2EX = 1'd0;
+                a1StallEX2DM = 1'd0;
+                a1StallDM2RW = (t1Use < tNewDM2RW);
             end
             else begin
-                a1StallDM = 1'd0;
-                a1StallEX = 1'd0;
-                a1StallRW = 1'd0;
+                a1StallRR2EX = 1'd0;
+                a1StallEX2DM = 1'd0;
+                a1StallDM2RW = 1'd0;
             end
         end
         else begin
-            a1StallDM = 1'd0;
-            a1StallEX = 1'd0;
-            a1StallRW = 1'd0;
+            a1StallRR2EX = 1'd0;
+            a1StallEX2DM = 1'd0;
+            a1StallDM2RW = 1'd0;
         end
-        if(a2UseRR != 0) begin
-            if(a2UseRR == aNewEX) begin
-                a2StallEX = (t2UseRR < tNewEX);
-                a2StallDM = 1'd0;
-                a2StallRW = 1'd0;
-            end if(a2UseRR == aNewDM) begin
-                a2StallEX = 1'd0;
-                a2StallDM = (t2UseRR < tNewDM);
-                a2StallRW = 1'd0;
-            end if(a2UseRR == aNewRW) begin
-                a2StallEX = 1'd0;
-                a2StallDM = 1'd0;
-                a2StallRW = (t2UseRR < tNewRW);
+        if(a2Use != 0) begin
+            if(a2Use == aNewRR2EX) begin
+                a2StallRR2EX = (t2Use < tNewRR2EX);
+                a2StallEX2DM = 1'd0;
+                a2StallDM2RW = 1'd0;
+            end
+            else if(a2Use == aNewEX2DM) begin
+                a2StallRR2EX = 1'd0;
+                a2StallEX2DM = (t2Use < tNewEX2DM);
+                a2StallDM2RW = 1'd0;
+            end
+            else if(a2Use == aNewDM2RW) begin
+                a2StallRR2EX = 1'd0;
+                a2StallEX2DM = 1'd0;
+                a2StallDM2RW = (t2Use < tNewDM2RW);
             end
             else begin
-                a2StallDM = 1'd0;
-                a2StallEX = 1'd0;
-                a2StallRW = 1'd0;
+                a2StallEX2DM = 1'd0;
+                a2StallRR2EX = 1'd0;
+                a2StallDM2RW = 1'd0;
             end
         end
         else begin
-            a2StallDM = 1'd0;
-            a2StallEX = 1'd0;
-            a2StallRW = 1'd0;
+            a2StallEX2DM = 1'd0;
+            a2StallRR2EX = 1'd0;
+            a2StallDM2RW = 1'd0;
         end
-        a1Stall = a1StallEX | a1StallDM | a1StallRW;
-        a2Stall = a2StallEX | a2StallDM | a2StallRW;
+        a1Stall = a1StallRR2EX | a1StallEX2DM | a1StallDM2RW;
+        a2Stall = a2StallRR2EX | a2StallEX2DM | a2StallDM2RW;
         Stall   = a1Stall   | a2Stall;
     end
     
@@ -128,36 +133,36 @@ module MIPS(
     // Register Read (RR)
     // Register Read (RR)
     
-    always@(*) begin
+    always@(*) begin // aUse, tUse
         if(`ADD_RR || `SUB_RR) begin
-            a1UseRR = instrIF2RR[`A1];
-            a2UseRR = instrIF2RR[`A2];
-            t1UseRR = 2'd1;
-            t2UseRR = 2'd1;
+            a1Use = instrIF2RR[`A1];
+            a2Use = instrIF2RR[`A2];
+            t1Use = 2'd1;
+            t2Use = 2'd1;
         end
         else if(`LW_RR) begin
-            a1UseRR = instrIF2RR[`A1];
-            a2UseRR = 5'd0;
-            t1UseRR = 2'd1;
-            t2UseRR = 2'd0;
+            a1Use = instrIF2RR[`A1];
+            a2Use = 5'd0;
+            t1Use = 2'd1;
+            t2Use = 2'd0;
         end
         else if(`SW_RR) begin
-            a1UseRR = instrIF2RR[`A1];
-            a2UseRR = instrIF2RR[`A2];
-            t1UseRR = 2'd1;
-            t2UseRR = 2'd2;
+            a1Use = instrIF2RR[`A1];
+            a2Use = instrIF2RR[`A2];
+            t1Use = 2'd1;
+            t2Use = 2'd2;
         end
         else if(`ORI_RR) begin
-            a1UseRR = instrIF2RR[`A1];
-            a2UseRR = 5'd0;
-            t1UseRR = 2'd1;
-            t2UseRR = 2'd0;
+            a1Use = instrIF2RR[`A1];
+            a2Use = 5'd0;
+            t1Use = 2'd1;
+            t2Use = 2'd0;
         end
         else begin
-            a1UseRR = 5'd0;
-            a2UseRR = 5'd0;
-            t1UseRR = 2'd0;
-            t2UseRR = 2'd0;
+            a1Use = 5'd0;
+            a2Use = 5'd0;
+            t1Use = 2'd0;
+            t2Use = 2'd0;
         end
     end
 
@@ -184,67 +189,48 @@ module MIPS(
     logic   [31:0]  v1RR, v2RR;
     assign  a1RR    = instrIF2RR[`A1];
     assign  a2RR    = instrIF2RR[`A2];
-    always@(*) begin // trans
+    always@(*) begin // trans: v1RR, v2RR
         if(a1RR != 0) begin
-            if(a1RR == aNewEX) begin
-                if(tNewEX == 0)
-                    v1RR = vNewEX;
-                else
-                    v1RR = v1GrfRR;
-            end
-            else if(a1RR == aNewDM) begin
-                if(tNewDM == 0)
-                    v1RR = vNewDM;
-                else
-                    v1RR = v1GrfRR;
-            end
-            else if(a1RR == aNewRW) begin
-                if(tNewRW == 0)
-                    v1RR = vNewRW;
-                else
-                    v1RR = v1GrfRR;
-            end
-            else v1RR = v1GrfRR;
+            if(a1RR == aNewRR2EX)
+                v1RR = tNewRR2EX ? v1GrfRR : vNewRR2EX;
+            else if(a1RR == aNewEX2DM)
+                v1RR = tNewEX2DM ? v1GrfRR : vNewEX2DM;
+            else if(a1RR == aNewDM2RW)
+                v1RR = tNewDM2RW ? v1GrfRR : vNewDM2RW;
+            else
+                v1RR = v1GrfRR;
         end
         else v1RR = v1GrfRR;
         if(a2RR != 0) begin
-            if(a2RR == aNewEX) begin
-                if(tNewEX == 0)
-                    v2RR = vNewEX;
-                else
-                    v2RR = v2GrfRR;
-            end
-            else if(a2RR == aNewDM) begin
-                if(tNewDM == 0)
-                    v2RR = vNewDM;
-                else
-                    v2RR = v2GrfRR;
-            end
-            else if(a2RR == aNewRW) begin
-                if(tNewRW == 0)
-                    v2RR = vNewRW;
-                else
-                    v2RR = v2GrfRR;
-            end
-            else v2RR    = v2GrfRR;
+            if(a2RR == aNewRR2EX)
+                v2RR = tNewRR2EX ? v2GrfRR : vNewRR2EX;
+            else if(a2RR == aNewEX2DM)
+                v2RR = tNewEX2DM ? v2GrfRR : vNewEX2DM;
+            else if(a2RR == aNewDM2RW)
+                v2RR = tNewDM2RW ? v2GrfRR : vNewDM2RW;
+            else
+                v2RR = v2GrfRR;
         end
         else v2RR = v2GrfRR;
     end
 
-    always@(*) begin
+    logic   [4:0]   aNewRR;
+    logic   [1:0]   tNewRR;
+    logic   [31:0]  vNewRR;
+    always@(*) begin // aNew, tNew, vNew
         if(`ADD_RR || `SUB_RR) begin
             aNewRR  = instrIF2RR[`A3];
-            tNewRR  = 2'd1;
+            tNewRR  = 2'd2;
             vNewRR  = 32'd0;
         end
         else if(`ORI_RR) begin
             aNewRR  = instrIF2RR[`A2];
-            tNewRR  = 2'd1;
+            tNewRR  = 2'd2;
             vNewRR  = 32'd0;
         end
         else if(`LW_RR) begin
             aNewRR  = instrIF2RR[`A2];
-            tNewRR  = 2'd2;
+            tNewRR  = 2'd3;
             vNewRR  = 32'd0;
         end
         else begin
@@ -269,9 +255,6 @@ module MIPS(
             instrRR2EX  <= instrIF2RR;
         end
     end
-    logic   [4:0]   aNewRR2EX;
-    logic   [1:0]   tNewRR2EX;
-    logic   [31:0]  vNewRR2EX;
     always@(posedge clk) begin // aNew, tNew, vNew
         if(reset || Stall) begin
             aNewRR2EX   <= 5'd0;
@@ -306,35 +289,21 @@ module MIPS(
     assign  a2EX    = instrRR2EX[`A2];
     always@(*) begin // trans
         if(a1EX != 0) begin
-            if(a1EX == aNewDM) begin
-                if(tNewDM == 0)
-                    v1EX = vNewDM;
-                else
-                    v1EX = v1RR2EX;
-            end
-            else if(a1EX == aNewRW) begin
-                if(tNewRW == 0)
-                    v1EX = vNewRW;
-                else
-                    v1EX = v1RR2EX;
-            end
-            else v1EX = v1RR2EX;
+            if(a1EX == aNewEX2DM)
+                v1EX = tNewEX2DM ? v1RR2EX : vNewEX2DM;
+            else if(a1EX == aNewDM2RW)
+                v1EX = tNewDM2RW ? v1RR2EX : vNewDM2RW;
+            else
+                v1EX = v1RR2EX;
         end
         else v1EX = v1RR2EX;
         if(a2EX != 0) begin
-            if(a2EX == aNewDM) begin
-                if(tNewDM == 0)
-                    v2EX = vNewDM;
-                else
-                    v2EX = v2RR2EX;
-            end
-            else if(a2EX == aNewRW) begin
-                if(tNewRW == 0)
-                    v2EX = vNewRW;
-                else
-                    v2EX = v2RR2EX;
-            end
-            else v2EX = v2RR2EX;
+            if(a2EX == aNewEX2DM)
+                v2EX = tNewEX2DM ? v2RR2EX : vNewEX2DM;
+            else if(a2EX == aNewDM2RW)
+                v2EX = tNewDM2RW ? v2RR2EX : vNewDM2RW;
+            else
+                v2EX = v2RR2EX;
         end
         else v2EX = v2RR2EX;
     end
@@ -347,38 +316,26 @@ module MIPS(
     assign  imm16AluEX  = instrRR2EX[`IMM16];
     logic   [3:0]   optAluEX;
     always@(*) begin
-        if(`ADD_EX) begin
+        if(`ADD_EX)
             optAluEX    = 4'd0;
-        end
-        else if(`SUB_EX) begin
+        else if(`SUB_EX)
             optAluEX    = 4'd1;
-        end
-        else if(`ORI_EX) begin
+        else if(`ORI_EX)
             optAluEX    = 4'd3;
-        end
-        else if(`LW_EX || `SW_EX) begin
+        else if(`LW_EX || `SW_EX)
             optAluEX    = 4'd4;
-        end
-        else if(`LUI_EX) begin
+        else if(`LUI_EX)
             optAluEX    = 4'd15;
-        end
-        else begin
+        else
             optAluEX    = 4'd0;
-        end
     end
     
     logic   [31:0]  resAluEX;
     ALU ALU_0(.v1(v1AluEX), .v2(v2AluEX), .imm16(imm16AluEX), .opt(optAluEX),
     .res(resAluEX)/*, .overf()*/);
     
-    always@(*) begin
-        aNewEX = aNewRR2EX;
-        tNewEX = tNewRR2EX;
-        if(`ADD_EX || `SUB_EX || `ORI_EX)
-            vNewEX  = resAluEX;
-        else
-            vNewEX  = vNewRR2EX;
-    end
+    logic   [31:0]  vNewEX;
+    assign  vNewEX  = (`ADD_EX || `SUB_EX || `ORI_EX) ? resAluEX : vNewRR2EX;
     
     // Execute to Data Memory (EX2DM)
     // Execute to Data Memory (EX2DM)
@@ -395,9 +352,6 @@ module MIPS(
             instrEX2DM  <= instrRR2EX;
         end
     end
-    logic   [4:0]   aNewEX2DM;
-    logic   [1:0]   tNewEX2DM;
-    logic   [31:0]  vNewEX2DM;
     always@(posedge clk) begin // aNew, tNew, vNew
         if(reset) begin
             aNewEX2DM   <= 5'd0;
@@ -405,8 +359,8 @@ module MIPS(
             vNewEX2DM   <= 32'd0; 
         end
         else begin
-            aNewEX2DM   <= aNewEX;
-            tNewEX2DM   <= tNewEX ? tNewEX - 1 : tNewEX;
+            aNewEX2DM   <= aNewRR2EX;
+            tNewEX2DM   <= tNewRR2EX ? tNewRR2EX - 1 : tNewRR2EX;
             vNewEX2DM   <= vNewEX;
         end
     end
@@ -431,13 +385,10 @@ module MIPS(
     assign  a2DM    = instrEX2DM[`A2];
     always@(*) begin // trans
         if(a2DM != 0) begin
-            if(a2DM == aNewRW) begin
-                if(tNewRW == 0)
-                    v2DM = vNewRW;
-                else
-                    v2DM = v2EX2DM;
-            end
-            else v2DM = v2EX2DM;
+            if(a2DM == aNewDM2RW)
+                v2DM = tNewDM2RW ? v2EX2DM : vNewDM2RW;
+            else
+                v2DM = v2EX2DM;
         end
         else v2DM = v2EX2DM;
     end
@@ -447,7 +398,6 @@ module MIPS(
     assign  aDMDM       = vEX2DM;
     assign  wDataDMDM   = v2DM;
     logic           wEnDMDM;
-
     always@(*) begin
         if(`SW_DM)
             wEnDMDM = 1'b1;
@@ -461,21 +411,10 @@ module MIPS(
     );
 
     logic   [31:0]  vDM;
-    always@(*) begin
-        if(`LW_DM)
-            vDM = vDMDM;
-        else
-            vDM = vEX2DM;
-    end
-
-    always@(*) begin
-        aNewDM  = aNewEX2DM;
-        tNewDM  = tNewEX2DM;
-        if(`LW_DM)
-            vNewDM  = vDMDM;
-        else
-            vNewDM  = vNewEX2DM;
-    end
+    assign  vDM = (`LW_DM) ? vDMDM : vEX2DM;
+    
+    logic   [31:0]  vNewDM;
+    assign  vNewDM = (`LW_DM) ? vDMDM : vNewEX2DM;
     
     // Data Memory to Register Write (DM2RW)
     // Data Memory to Register Write (DM2RW)
@@ -493,9 +432,6 @@ module MIPS(
             instrDM2RW  <= instrEX2DM;
         end
     end
-    logic   [4:0]   aNewDM2RW;
-    logic   [1:0]   tNewDM2RW;
-    logic   [31:0]  vNewDM2RW;
     always@(posedge clk) begin // aNew, tNew, vNew
         if(reset) begin
             aNewDM2RW   <= 5'd0;
@@ -503,8 +439,8 @@ module MIPS(
             vNewDM2RW   <= 32'd0;
         end
         else begin
-            aNewDM2RW   <= aNewDM;
-            tNewDM2RW   <= tNewDM ? tNewDM - 1 : tNewDM;
+            aNewDM2RW   <= aNewEX2DM;
+            tNewDM2RW   <= tNewEX2DM ? tNewEX2DM - 1 : tNewEX2DM;
             vNewDM2RW   <= vNewDM;
         end
     end
@@ -539,11 +475,5 @@ module MIPS(
             wDataGrfRW  = 32'd0;
             wEnGrfRW    = 1'b0;
         end
-    end
-    
-    always@(*) begin
-        aNewRW  = aNewDM2RW;
-        tNewRW  = tNewDM2RW;
-        vNewRW  = vNewDM2RW;
     end
 endmodule
