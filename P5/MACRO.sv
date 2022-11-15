@@ -22,6 +22,20 @@
 `define SUB_DM      ((instrEX2DM[`OPTION1] == `SPECIAL) && (instrEX2DM[`OPTION2] == `SUB))
 `define SUB_RW      ((instrDM2RW[`OPTION1] == `SPECIAL) && (instrDM2RW[`OPTION2] == `SUB))
 
+`define LW          (6'b100011)
+`define LW_IF       (instrIF[`OPTION1]    == `LW)
+`define LW_RR       (instrIF2RR[`OPTION1] == `LW)
+`define LW_EX       (instrRR2EX[`OPTION1] == `LW)
+`define LW_DM       (instrEX2DM[`OPTION1] == `LW)
+`define LW_RW       (instrDM2RW[`OPTION1] == `LW)
+
+`define SW          (6'b101011)
+`define SW_IF       (instrIF[`OPTION1]    == `SW)
+`define SW_RR       (instrIF2RR[`OPTION1] == `SW)
+`define SW_EX       (instrRR2EX[`OPTION1] == `SW)
+`define SW_DM       (instrEX2DM[`OPTION1] == `SW)
+`define SW_RW       (instrDM2RW[`OPTION1] == `SW)
+
 `define LUI         (6'b001111)
 `define LUI_IF      (instrIF[`OPTION1]    == `LUI)
 `define LUI_RR      (instrIF2RR[`OPTION1] == `LUI)

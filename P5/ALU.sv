@@ -34,28 +34,28 @@ module ALU(
     
     always@(*) begin
         case(opt)
-            4'd0: begin // +
+            4'd0: begin // v1 + v2
                 result      = {v1[31], v1} + {v2[31], v2};
                 overflow    = (result[32] != result[31]);
             end
-            4'd1: begin // -
+            4'd1: begin // v1 - v2
                 result      = {v1[31], v1} - {v2[31], v2};
                 overflow    = (result[32] != result[31]);
             end
-            4'd2: begin
+            4'd2: begin // v1 & v2
                 result      = {1'b0, v1} & {17'b0, imm16};
                 overflow    = 1'b0;
             end
-            4'd3: begin
+            4'd3: begin // v1 | v2
                 result      = {1'b0, v1} | {17'b0, imm16};
                 overflow    = 1'b0;
             end
-            4'd4: begin
-                result      = {1'b0, imm16, 16'b0};
+            4'd4: begin // v1 + sign_extend_imm16
+                result      = {v1[31], v1} + {{17{imm16[15]}}, imm16};
                 overflow    = 1'b0;
             end
             default: begin
-                result      = 33'h0ffffffff;
+                result      = {1'b0, imm16, 16'b0};
                 overflow    = 1'b0;
             end
         endcase

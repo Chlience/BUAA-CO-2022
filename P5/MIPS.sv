@@ -135,6 +135,18 @@ module MIPS(
             t1UseRR = 2'd1;
             t2UseRR = 2'd1;
         end
+        else if(`LW_RR) begin
+            a1UseRR = instrIF2RR[`A1];
+            a2UseRR = 5'd0;
+            t1UseRR = 2'd1;
+            t2UseRR = 2'd0;
+        end
+        else if(`SW_RR) begin
+            a1UseRR = instrIF2RR[`A1];
+            a2UseRR = instrIF2RR[`A2];
+            t1UseRR = 2'd1;
+            t2UseRR = 2'd2;
+        end
         else if(`ORI_RR) begin
             a1UseRR = instrIF2RR[`A1];
             a2UseRR = 5'd0;
@@ -155,16 +167,16 @@ module MIPS(
     assign  a2GrfRR = instrIF2RR[`A2];
     
     // RW declare move here
-    logic           wEnGrfRW;
     logic   [4:0]   aGrfRW;
-    logic   [31:0]  vGrfRW;
+    logic   [31:0]  wDataGrfRW;
+    logic           wEnGrfRW;
     logic   [31:0]  pcDM2RW;
     
     logic   [31:0]  v1GrfRR;
     logic   [31:0]  v2GrfRR;
     GRF GRF_0(.clk(clk), .reset(reset),
     .a1(a1GrfRR), .a2(a2GrfRR), .a3(aGrfRW),
-    .wData(vGrfRW), .wEn(wEnGrfRW),
+    .wData(wDataGrfRW), .wEn(wEnGrfRW),
     .v1(v1GrfRR), .v2(v2GrfRR),
     .pc(pcDM2RW));
     
@@ -228,6 +240,11 @@ module MIPS(
         else if(`ORI_RR) begin
             aNewRR  = instrIF2RR[`A2];
             tNewRR  = 2'd1;
+            vNewRR  = 32'd0;
+        end
+        else if(`LW_RR) begin
+            aNewRR  = instrIF2RR[`A2];
+            tNewRR  = 2'd2;
             vNewRR  = 32'd0;
         end
         else begin
@@ -339,8 +356,11 @@ module MIPS(
         else if(`ORI_EX) begin
             optAluEX    = 4'd3;
         end
-        else if(`LUI_EX) begin
+        else if(`LW_EX || `SW_EX) begin
             optAluEX    = 4'd4;
+        end
+        else if(`LUI_EX) begin
+            optAluEX    = 4'd15;
         end
         else begin
             optAluEX    = 4'd0;
@@ -354,12 +374,10 @@ module MIPS(
     always@(*) begin
         aNewEX = aNewRR2EX;
         tNewEX = tNewRR2EX;
-        if(`ADD_EX || `SUB_EX || `ORI_EX) begin
+        if(`ADD_EX || `SUB_EX || `ORI_EX)
             vNewEX  = resAluEX;
-        end
-        else begin
+        else
             vNewEX  = vNewRR2EX;
-        end
     end
     
     // Execute to Data Memory (EX2DM)
@@ -422,11 +440,40 @@ module MIPS(
         end
         else v2DM = v2EX2DM;
     end
-    
+
+    logic   [31:0]  aDMDM;
+    logic   [31:0]  wDataDMDM;
+    assign  aDMDM       = vEX2DM;
+    assign  wDataDMDM   = v2DM;
+    logic           wEnDMDM;
+
+    always@(*) begin
+        if(`SW_DM)
+            wEnDMDM = 1'b1;
+        else
+            wEnDMDM = 1'b0;
+    end
+    logic   [31:0]  vDMDM;
+    DM DM_0(.clk(clk), .reset(reset),
+    .a(aDMDM[13:2]), .wData(wDataDMDM), .wEn(wEnDMDM),
+    .v(vDMDM), .pc(pcEX2DM)
+    );
+
+    logic   [31:0]  vDM;
+    always@(*) begin
+        if(`LW_DM)
+            vDM = vDMDM;
+        else
+            vDM = vEX2DM;
+    end
+
     always@(*) begin
         aNewDM  = aNewEX2DM;
         tNewDM  = tNewEX2DM;
-        vNewDM  = vNewEX2DM;
+        if(`LW_DM)
+            vNewDM  = vDMDM;
+        else
+            vNewDM  = vNewEX2DM;
     end
     
     // Data Memory to Register Write (DM2RW)
@@ -462,12 +509,10 @@ module MIPS(
     end
     logic   [31:0]  vDM2RW;
     always@(posedge clk) begin // other register
-        if(reset || Stall) begin
+        if(reset || Stall)
             vDM2RW  <= 32'd0;
-        end
-        else begin
-            vDM2RW  <= vEX2DM;
-        end
+        else
+            vDM2RW  <= vDM;
     end
     
     // Register Write (RW)
@@ -475,22 +520,22 @@ module MIPS(
     
     /* Declare move to RR
     logic   [4:0]   aGrfRW;
-    logic   [31:0]  vGrfRW;
+    logic   [31:0]  wDataGrfRW;
     logic           wEnGrfRW; */
     always@(*) begin
         if(`ADD_RW || `SUB_RW) begin
             aGrfRW      = instrDM2RW[`A3];
-            vGrfRW      = vDM2RW;
+            wDataGrfRW  = vDM2RW;
             wEnGrfRW    = 1'b1;
         end
-        else if(`LUI_RW || `ORI_RW) begin
+        else if(`ORI_RW || `LW_RW || `LUI_RW ) begin
             aGrfRW      = instrDM2RW[`A2];
-            vGrfRW      = vDM2RW;
+            wDataGrfRW  = vDM2RW;
             wEnGrfRW    = 1'b1;
         end
         else begin
             aGrfRW      = 5'd0;
-            vGrfRW      = 32'd0;
+            wDataGrfRW  = 32'd0;
             wEnGrfRW    = 1'b0;
         end
     end
