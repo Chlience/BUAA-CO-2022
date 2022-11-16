@@ -23,7 +23,7 @@
 module ALU(
     input   [31:0]  v1,     // value
     input   [31:0]  v2,
-    input   [15:0]  imm16,    // immediate number
+    input   [15:0]  imm16,  // immediate number
     input   [3:0]   opt,    // option
     output  [31:0]  res,    // result
     output          overf   // overflow

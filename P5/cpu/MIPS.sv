@@ -30,503 +30,503 @@ module mips(
     
     logic   [4:0]   a1Use, a2Use;
     logic   [1:0]   t1Use, t2Use;
-    logic   [4:0]   aNewRR2EX, aNewEX2DM, aNewDM2RW;
-    logic   [1:0]   tNewRR2EX, tNewEX2DM, tNewDM2RW;
-    logic   [31:0]  vNewRR2EX, vNewEX2DM, vNewDM2RW;
+    logic   [4:0]   aNewD2E, aNewE2M, aNewM2W;
+    logic   [1:0]   tNewD2E, tNewE2M, tNewM2W;
+    logic   [31:0]  vNewD2E, vNewE2M, vNewM2W;
     
     logic   Stall;
     logic   a1Stall, a2Stall;
-    logic   a1StallRR2EX, a2StallRR2EX;
-    logic   a1StallEX2DM, a2StallEX2DM;
-    logic   a1StallDM2RW, a2StallDM2RW;
+    logic   a1StallD2E, a2StallD2E;
+    logic   a1StallE2M, a2StallE2M;
+    logic   a1StallM2W, a2StallM2W;
     
     always@(*) begin // Stall
         if(a1Use != 0) begin
-            if(a1Use == aNewRR2EX) begin
-                a1StallRR2EX = (t1Use < tNewRR2EX);
-                a1StallEX2DM = 1'd0;
-                a1StallDM2RW = 1'd0;
+            if(a1Use == aNewD2E) begin
+                a1StallD2E = (t1Use < tNewD2E);
+                a1StallE2M = 1'd0;
+                a1StallM2W = 1'd0;
             end
-            else if(a1Use == aNewEX2DM) begin
-                a1StallRR2EX = 1'd0;    
-                a1StallEX2DM = (t1Use < tNewEX2DM);
-                a1StallDM2RW = 1'd0;
+            else if(a1Use == aNewE2M) begin
+                a1StallD2E = 1'd0;    
+                a1StallE2M = (t1Use < tNewE2M);
+                a1StallM2W = 1'd0;
             end
-            else if(a1Use == aNewDM2RW) begin
-                a1StallRR2EX = 1'd0;
-                a1StallEX2DM = 1'd0;
-                a1StallDM2RW = (t1Use < tNewDM2RW);
+            else if(a1Use == aNewM2W) begin
+                a1StallD2E = 1'd0;
+                a1StallE2M = 1'd0;
+                a1StallM2W = (t1Use < tNewM2W);
             end
             else begin
-                a1StallRR2EX = 1'd0;
-                a1StallEX2DM = 1'd0;
-                a1StallDM2RW = 1'd0;
+                a1StallD2E = 1'd0;
+                a1StallE2M = 1'd0;
+                a1StallM2W = 1'd0;
             end
         end
         else begin
-            a1StallRR2EX = 1'd0;
-            a1StallEX2DM = 1'd0;
-            a1StallDM2RW = 1'd0;
+            a1StallD2E = 1'd0;
+            a1StallE2M = 1'd0;
+            a1StallM2W = 1'd0;
         end
         if(a2Use != 0) begin
-            if(a2Use == aNewRR2EX) begin
-                a2StallRR2EX = (t2Use < tNewRR2EX);
-                a2StallEX2DM = 1'd0;
-                a2StallDM2RW = 1'd0;
+            if(a2Use == aNewD2E) begin
+                a2StallD2E = (t2Use < tNewD2E);
+                a2StallE2M = 1'd0;
+                a2StallM2W = 1'd0;
             end
-            else if(a2Use == aNewEX2DM) begin
-                a2StallRR2EX = 1'd0;
-                a2StallEX2DM = (t2Use < tNewEX2DM);
-                a2StallDM2RW = 1'd0;
+            else if(a2Use == aNewE2M) begin
+                a2StallD2E = 1'd0;
+                a2StallE2M = (t2Use < tNewE2M);
+                a2StallM2W = 1'd0;
             end
-            else if(a2Use == aNewDM2RW) begin
-                a2StallRR2EX = 1'd0;
-                a2StallEX2DM = 1'd0;
-                a2StallDM2RW = (t2Use < tNewDM2RW);
+            else if(a2Use == aNewM2W) begin
+                a2StallD2E = 1'd0;
+                a2StallE2M = 1'd0;
+                a2StallM2W = (t2Use < tNewM2W);
             end
             else begin
-                a2StallEX2DM = 1'd0;
-                a2StallRR2EX = 1'd0;
-                a2StallDM2RW = 1'd0;
+                a2StallE2M = 1'd0;
+                a2StallD2E = 1'd0;
+                a2StallM2W = 1'd0;
             end
         end
         else begin
-            a2StallEX2DM = 1'd0;
-            a2StallRR2EX = 1'd0;
-            a2StallDM2RW = 1'd0;
+            a2StallE2M = 1'd0;
+            a2StallD2E = 1'd0;
+            a2StallM2W = 1'd0;
         end
-        a1Stall = a1StallRR2EX | a1StallEX2DM | a1StallDM2RW;
-        a2Stall = a2StallRR2EX | a2StallEX2DM | a2StallDM2RW;
-        Stall   = a1Stall   | a2Stall;
+        a1Stall = a1StallD2E | a1StallE2M | a1StallM2W;
+        a2Stall = a2StallD2E | a2StallE2M | a2StallM2W;
+        Stall   = a1Stall    | a2Stall;
     end
     
-    // Instrution Fetch (IF)
-    // Instrution Fetch (IF)
+    // Instrution Fetch (F)
+    // Instrution Fetch (F)
     
-    logic   [31:0]  pcIF;
-    logic   [31:0]  npcIF;
-    logic   [31:0]  instrIF;
-    logic   npcEnIF;
-    assign  npcEnIF = ~ Stall;
+    logic   [31:0]  pcF;
+    logic   [31:0]  npcF;
+    logic   [31:0]  instrF;
+    logic   npcEnF;
+    assign  npcEnF  = ~ Stall;
 
-    logic   [31:0]  jpcRR;
-    logic           jpcEnRR;
+    logic   [31:0]  jpcD;
+    logic           jpcEnD;
     
-    PC  PC_0(.clk(clk), .reset(reset), .pc(pcIF), .npc(npcIF), .npcEn(npcEnIF));
-    IM  IM_0(.pc(pcIF), .instr(instrIF));
-    NPC NPC_0(.pc(pcIF), .jpc(jpcRR), .jpcEn(jpcEnRR), .npc(npcIF));
+    PC  PC_0(.clk(clk), .reset(reset), .pc(pcF), .npc(npcF), .npcEn(npcEnF));
+    IM  IM_0(.pc(pcF), .instr(instrF));
+    NPC NPC_0(.pc(pcF), .jpc(jpcD), .jpcEn(jpcEnD), .npc(npcF));
     
     // Instruction Fetch to Register Read
     // Instruction Fetch to Register Read
     
-    logic   [31:0]  pcIF2RR;
-    logic   [31:0]  instrIF2RR;
+    logic   [31:0]  pcF2D;
+    logic   [31:0]  instrF2D;
     always@(posedge clk) begin // pc, instruction
         if(reset) begin
-            pcIF2RR     <= 32'd0;
-            instrIF2RR  <= 32'd0;
+            pcF2D       <= 32'd0;
+            instrF2D    <= 32'd0;
         end
         else if(~ Stall) begin
-            pcIF2RR     <= pcIF;
-            instrIF2RR  <= instrIF;
+            pcF2D       <= pcF;
+            instrF2D    <= instrF;
         end
     end
     
-    // Register Read (RR)
-    // Register Read (RR)
+    // Register Read (D)
+    // Register Read (D)
     
     always@(*) begin // aUse, tUse
-        if(`ADD_RR || `SUB_RR) begin
-            a1Use = instrIF2RR[`A1];
-            t1Use = 2'd1;
-            a2Use = instrIF2RR[`A2];
-            t2Use = 2'd1;
+        if(`ADD_D || `SUB_D) begin
+            a1Use   = instrF2D[`A1];
+            t1Use   = 2'd1;
+            a2Use   = instrF2D[`A2];
+            t2Use   = 2'd1;
         end
-        else if(`LW_RR) begin
-            a1Use = instrIF2RR[`A1];
-            t1Use = 2'd1;
-            a2Use = 5'd0;
-            t2Use = 2'd0;
+        else if(`LW_D) begin
+            a1Use   = instrF2D[`A1];
+            t1Use   = 2'd1;
+            a2Use   = 5'd0;
+            t2Use   = 2'd0;
         end
-        else if(`SW_RR) begin
-            a1Use = instrIF2RR[`A1];
-            t1Use = 2'd1;
-            a2Use = instrIF2RR[`A2];
-            t2Use = 2'd2;
+        else if(`SW_D) begin
+            a1Use   = instrF2D[`A1];
+            t1Use   = 2'd1;
+            a2Use   = instrF2D[`A2];
+            t2Use   = 2'd2;
         end
-        else if(`ORI_RR) begin
-            a1Use = instrIF2RR[`A1];
-            t1Use = 2'd1;
-            a2Use = 5'd0;
-            t2Use = 2'd0;
+        else if(`ORI_D) begin
+            a1Use   = instrF2D[`A1];
+            t1Use   = 2'd1;
+            a2Use   = 5'd0;
+            t2Use   = 2'd0;
         end
-        else if(`BEQ_RR) begin
-            a1Use = instrIF2RR[`A1];
-            t1Use = 2'd0;
-            a2Use = instrIF2RR[`A2];
-            t2Use = 2'd0;
+        else if(`BEQ_D) begin
+            a1Use   = instrF2D[`A1];
+            t1Use   = 2'd0;
+            a2Use   = instrF2D[`A2];
+            t2Use   = 2'd0;
         end
-        else if(`JR_RR) begin
-            a1Use = instrIF2RR[`A1];
-            t1Use = 2'd0;
-            a2Use = 5'd0;
-            t2Use = 2'd0;
+        else if(`JR_D) begin
+            a1Use   = instrF2D[`A1];
+            t1Use   = 2'd0;
+            a2Use   = 5'd0;
+            t2Use   = 2'd0;
         end
         else begin
-            a1Use = 5'd0;
-            t1Use = 2'd0;
-            a2Use = 5'd0;
-            t2Use = 2'd0;
+            a1Use   = 5'd0;
+            t1Use   = 2'd0;
+            a2Use   = 5'd0;
+            t2Use   = 2'd0;
         end
     end
 
-    logic   [4:0]   a1GrfRR;
-    logic   [4:0]   a2GrfRR;
-    assign  a1GrfRR = instrIF2RR[`A1];
-    assign  a2GrfRR = instrIF2RR[`A2];
+    logic   [4:0]   a1GrfD;
+    logic   [4:0]   a2GrfD;
+    assign  a1GrfD  = instrF2D[`A1];
+    assign  a2GrfD  = instrF2D[`A2];
     
-    // RW declare move here
-    logic   [4:0]   aGrfRW;
-    logic   [31:0]  wDataGrfRW;
-    logic           wEnGrfRW;
-    logic   [31:0]  pcDM2RW;
+    // W declare move here
+    logic   [4:0]   aGrfW;
+    logic   [31:0]  wDataGrfW;
+    logic           wEnGrfW;
+    logic   [31:0]  pcM2W;
     
-    logic   [31:0]  v1GrfRR;
-    logic   [31:0]  v2GrfRR;
+    logic   [31:0]  v1GrfD;
+    logic   [31:0]  v2GrfD;
     GRF GRF_0(.clk(clk), .reset(reset),
-    .a1(a1GrfRR), .a2(a2GrfRR), .a3(aGrfRW),
-    .wData(wDataGrfRW), .wEn(wEnGrfRW),
-    .v1(v1GrfRR), .v2(v2GrfRR),
-    .pc(pcDM2RW));
+    .a1(a1GrfD), .a2(a2GrfD), .a3(aGrfW),
+    .wData(wDataGrfW), .wEn(wEnGrfW),
+    .v1(v1GrfD), .v2(v2GrfD),
+    .pc(pcM2W));
     
     
-    logic   [4:0]   a1RR, a2RR;
-    logic   [31:0]  v1RR, v2RR;
-    assign  a1RR    = instrIF2RR[`A1];
-    assign  a2RR    = instrIF2RR[`A2];
-    always@(*) begin // trans: v1RR, v2RR
-        if(a1RR != 0) begin
-            if(a1RR == aNewRR2EX)
-                v1RR = tNewRR2EX ? v1GrfRR : vNewRR2EX;
-            else if(a1RR == aNewEX2DM)
-                v1RR = tNewEX2DM ? v1GrfRR : vNewEX2DM;
-            else if(a1RR == aNewDM2RW)
-                v1RR = tNewDM2RW ? v1GrfRR : vNewDM2RW;
+    logic   [4:0]   a1D, a2D;
+    logic   [31:0]  v1D, v2D;
+    assign  a1D     = instrF2D[`A1];
+    assign  a2D     = instrF2D[`A2];
+    always@(*) begin // trans: v1D, v2D
+        if(a1D != 0) begin
+            if(a1D == aNewD2E)
+                v1D = tNewD2E ? v1GrfD : vNewD2E;
+            else if(a1D == aNewE2M)
+                v1D = tNewE2M ? v1GrfD : vNewE2M;
+            else if(a1D == aNewM2W)
+                v1D = tNewM2W ? v1GrfD : vNewM2W;
             else
-                v1RR = v1GrfRR;
+                v1D = v1GrfD;
         end
-        else v1RR = v1GrfRR;
-        if(a2RR != 0) begin
-            if(a2RR == aNewRR2EX)
-                v2RR = tNewRR2EX ? v2GrfRR : vNewRR2EX;
-            else if(a2RR == aNewEX2DM)
-                v2RR = tNewEX2DM ? v2GrfRR : vNewEX2DM;
-            else if(a2RR == aNewDM2RW)
-                v2RR = tNewDM2RW ? v2GrfRR : vNewDM2RW;
+        else v1D = v1GrfD;
+        if(a2D != 0) begin
+            if(a2D == aNewD2E)
+                v2D = tNewD2E ? v2GrfD : vNewD2E;
+            else if(a2D == aNewE2M)
+                v2D = tNewE2M ? v2GrfD : vNewE2M;
+            else if(a2D == aNewM2W)
+                v2D = tNewM2W ? v2GrfD : vNewM2W;
             else
-                v2RR = v2GrfRR;
+                v2D = v2GrfD;
         end
-        else v2RR = v2GrfRR;
+        else v2D = v2GrfD;
     end
 
-    /* Declare move to IF
-    logic   [31:0]  jpcRR;
-    logic           jpcEnRR;
+    /* Declare move to F
+    logic   [31:0]  jpcD;
+    logic           jpcEnD;
     */
     always@(*) begin
-        if(`BEQ_RR) begin
-            jpcRR   = pcIF + {{14{instrIF2RR[15]}}, instrIF2RR[`IMM16], 2'b00}; // following the branch
-            jpcEnRR = (v1RR == v2RR);
+        if(`BEQ_D) begin
+            jpcD    = pcF + {{14{instrF2D[15]}}, instrF2D[`IMM16], 2'b00}; // following the branch
+            jpcEnD  = (v1D == v2D);
         end
-        else if(`JAL_RR) begin
-            jpcRR   = {pcIF[31:28], instrIF2RR[`IMM26], 2'b00};
-            jpcEnRR = 1'b1;
+        else if(`JAL_D) begin
+            jpcD    = {pcF[31:28], instrF2D[`IMM26], 2'b00};
+            jpcEnD  = 1'b1;
         end
-        else if(`JR_RR) begin
-            jpcRR   = v1RR;
-            jpcEnRR   = 1'b1;
+        else if(`JR_D) begin
+            jpcD    = v1D;
+            jpcEnD  = 1'b1;
         end
         else begin
-            jpcRR   = 32'b0;
-            jpcEnRR = 1'b0;
+            jpcD   = 32'b0;
+            jpcEnD = 1'b0;
         end
     end
 
-    logic   [4:0]   aNewRR;
-    logic   [1:0]   tNewRR;
-    logic   [31:0]  vNewRR;
+    logic   [4:0]   aNewD;
+    logic   [1:0]   tNewD;
+    logic   [31:0]  vNewD;
     always@(*) begin // aNew, tNew, vNew
-        if(`ADD_RR || `SUB_RR) begin
-            aNewRR  = instrIF2RR[`A3];
-            tNewRR  = 2'd1;
-            vNewRR  = 32'd0;
+        if(`ADD_D || `SUB_D) begin
+            aNewD   = instrF2D[`A3];
+            tNewD   = 2'd1;
+            vNewD   = 32'd0;
         end
-        else if(`ORI_RR) begin
-            aNewRR  = instrIF2RR[`A2];
-            tNewRR  = 2'd1;
-            vNewRR  = 32'd0;
+        else if(`ORI_D) begin
+            aNewD   = instrF2D[`A2];
+            tNewD   = 2'd1;
+            vNewD   = 32'd0;
         end
-        else if(`LW_RR) begin
-            aNewRR  = instrIF2RR[`A2];
-            tNewRR  = 2'd2;
-            vNewRR  = 32'd0;
+        else if(`LW_D) begin
+            aNewD   = instrF2D[`A2];
+            tNewD   = 2'd2;
+            vNewD   = 32'd0;
         end
-        else if(`JAL_RR) begin
-            aNewRR  = 5'd31;
-            tNewRR  = 2'd0;
-            vNewRR  = pcIF2RR + 8;
+        else if(`JAL_D) begin
+            aNewD   = 5'd31;
+            tNewD   = 2'd0;
+            vNewD   = pcF2D + 8;
         end
-        else if(`LUI_RR) begin
-            aNewRR  = instrIF2RR[`A2];
-            tNewRR  = 2'd0;
-            vNewRR  = {instrIF2RR[`IMM16], 16'b0};
+        else if(`LUI_D) begin
+            aNewD   = instrF2D[`A2];
+            tNewD   = 2'd0;
+            vNewD   = {instrF2D[`IMM16], 16'b0};
         end
         else begin
-            aNewRR  = 5'd0;
-            tNewRR  = 2'd0;
-            vNewRR  = 32'd0;
+            aNewD   = 5'd0;
+            tNewD   = 2'd0;
+            vNewD   = 32'd0;
         end
     end
     
     // Register Read to Execute
     // Register Read to Execute
     
-    logic   [31:0]  pcRR2EX;
-    logic   [31:0]  instrRR2EX;
+    logic   [31:0]  pcD2E;
+    logic   [31:0]  instrD2E;
     always@(posedge clk) begin // pc, instruction
         if(reset || Stall) begin
-            pcRR2EX     <= 32'd0;
-            instrRR2EX  <= 32'd0;
+            pcD2E       <= 32'd0;
+            instrD2E    <= 32'd0;
         end
         else begin
-            pcRR2EX     <= pcIF2RR;
-            instrRR2EX  <= instrIF2RR;
+            pcD2E       <= pcF2D;
+            instrD2E    <= instrF2D;
         end
     end
     always@(posedge clk) begin // aNew, tNew, vNew
         if(reset || Stall) begin
-            aNewRR2EX   <= 5'd0;
-            tNewRR2EX   <= 2'd0;
-            vNewRR2EX   <= 32'd0;
+            aNewD2E     <= 5'd0;
+            tNewD2E     <= 2'd0;
+            vNewD2E     <= 32'd0;
         end
         else begin
-            aNewRR2EX   <= aNewRR;
-            tNewRR2EX   <= tNewRR;
-            vNewRR2EX   <= vNewRR;
+            aNewD2E     <= aNewD;
+            tNewD2E     <= tNewD;
+            vNewD2E     <= vNewD;
         end
     end
-    logic   [31:0]  v1RR2EX;
-    logic   [31:0]  v2RR2EX;
+    logic   [31:0]  v1D2E;
+    logic   [31:0]  v2D2E;
     always@(posedge clk) begin // other register
         if(reset || Stall) begin
-            v1RR2EX <= 32'd0;
-            v2RR2EX <= 32'd0;
+            v1D2E <= 32'd0;
+            v2D2E <= 32'd0;
         end
         else begin
-            v1RR2EX <= v1RR;
-            v2RR2EX <= v2RR;
+            v1D2E <= v1D;
+            v2D2E <= v2D;
         end
     end
     
-    // Execute (EX)
-    // Execute (EX)
+    // Execute (E)
+    // Execute (E)
 
-    logic   [4:0]   a1EX, a2EX;
-    logic   [31:0]  v1EX, v2EX;
-    assign  a1EX    = instrRR2EX[`A1];
-    assign  a2EX    = instrRR2EX[`A2];
+    logic   [4:0]   a1E, a2E;
+    logic   [31:0]  v1E, v2E;
+    assign  a1E     = instrD2E[`A1];
+    assign  a2E     = instrD2E[`A2];
     always@(*) begin // trans
-        if(a1EX != 0) begin
-            if(a1EX == aNewEX2DM)
-                v1EX = tNewEX2DM ? v1RR2EX : vNewEX2DM;
-            else if(a1EX == aNewDM2RW)
-                v1EX = tNewDM2RW ? v1RR2EX : vNewDM2RW;
+        if(a1E != 0) begin
+            if(a1E == aNewE2M)
+                v1E = tNewE2M ? v1D2E : vNewE2M;
+            else if(a1E == aNewM2W)
+                v1E = tNewM2W ? v1D2E : vNewM2W;
             else
-                v1EX = v1RR2EX;
+                v1E = v1D2E;
         end
-        else v1EX = v1RR2EX;
-        if(a2EX != 0) begin
-            if(a2EX == aNewEX2DM)
-                v2EX = tNewEX2DM ? v2RR2EX : vNewEX2DM;
-            else if(a2EX == aNewDM2RW)
-                v2EX = tNewDM2RW ? v2RR2EX : vNewDM2RW;
+        else v1E = v1D2E;
+        if(a2E != 0) begin
+            if(a2E == aNewE2M)
+                v2E = tNewE2M ? v2D2E : vNewE2M;
+            else if(a2E == aNewM2W)
+                v2E = tNewM2W ? v2D2E : vNewM2W;
             else
-                v2EX = v2RR2EX;
+                v2E = v2D2E;
         end
-        else v2EX = v2RR2EX;
+        else v2E = v2D2E;
     end
     
-    logic   [31:0]  v1AluEX;
-    logic   [31:0]  v2AluEX;
-    logic   [15:0]  imm16AluEX;
-    assign  v1AluEX     = v1EX;
-    assign  v2AluEX     = v2EX;
-    assign  imm16AluEX  = instrRR2EX[`IMM16];
-    logic   [3:0]   optAluEX;
+    logic   [31:0]  v1AluE;
+    logic   [31:0]  v2AluE;
+    logic   [15:0]  imm16AluE;
+    assign  v1AluE     = v1E;
+    assign  v2AluE     = v2E;
+    assign  imm16AluE  = instrD2E[`IMM16];
+    logic   [3:0]   optAluE;
     always@(*) begin
-        if(`ADD_EX)
-            optAluEX    = 4'd0;
-        else if(`SUB_EX)
-            optAluEX    = 4'd1;
-        else if(`ORI_EX)
-            optAluEX    = 4'd3;
-        else if(`LW_EX || `SW_EX)
-            optAluEX    = 4'd4;
-        else if(`LUI_EX)
-            optAluEX    = 4'd15;
+        if(`ADD_E)
+            optAluE    = 4'd0;
+        else if(`SUB_E)
+            optAluE    = 4'd1;
+        else if(`ORI_E)
+            optAluE    = 4'd3;
+        else if(`LW_E || `SW_E)
+            optAluE    = 4'd4;
+        else if(`LUI_E)
+            optAluE    = 4'd15;
         else
-            optAluEX    = 4'd0;
+            optAluE    = 4'd0;
     end
     
-    logic   [31:0]  resAluEX;
-    ALU ALU_0(.v1(v1AluEX), .v2(v2AluEX), .imm16(imm16AluEX), .opt(optAluEX),
-    .res(resAluEX)/*, .overf()*/);
+    logic   [31:0]  resAluE;
+    ALU ALU_0(.v1(v1AluE), .v2(v2AluE), .imm16(imm16AluE), .opt(optAluE),
+    .res(resAluE)/*, .overf()*/);
     
-    logic   [31:0]  vNewEX;
-    assign  vNewEX  = (`ADD_EX || `SUB_EX || `ORI_EX) ? resAluEX : vNewRR2EX;
+    logic   [31:0]  vNewE;
+    assign  vNewE  = (`ADD_E || `SUB_E || `ORI_E) ? resAluE : vNewD2E;
     
-    // Execute to Data Memory (EX2DM)
-    // Execute to Data Memory (EX2DM)
+    // Execute to Data Memory (E2M)
+    // Execute to Data Memory (E2M)
     
-    logic   [31:0]  pcEX2DM;
-    logic   [31:0]  instrEX2DM;
+    logic   [31:0]  pcE2M;
+    logic   [31:0]  instrE2M;
     always@(posedge clk) begin // pc, instrution
         if(reset) begin
-            pcEX2DM     <= 32'd0;
-            instrEX2DM  <= 32'd0;
+            pcE2M     <= 32'd0;
+            instrE2M  <= 32'd0;
         end
         else begin
-            pcEX2DM     <= pcRR2EX;
-            instrEX2DM  <= instrRR2EX;
+            pcE2M     <= pcD2E;
+            instrE2M  <= instrD2E;
         end
     end
     always@(posedge clk) begin // aNew, tNew, vNew
         if(reset) begin
-            aNewEX2DM   <= 5'd0;
-            tNewEX2DM   <= 2'd0;
-            vNewEX2DM   <= 32'd0; 
+            aNewE2M   <= 5'd0;
+            tNewE2M   <= 2'd0;
+            vNewE2M   <= 32'd0; 
         end
         else begin
-            aNewEX2DM   <= aNewRR2EX;
-            tNewEX2DM   <= tNewRR2EX ? tNewRR2EX - 1 : tNewRR2EX;
-            vNewEX2DM   <= vNewEX;
+            aNewE2M   <= aNewD2E;
+            tNewE2M   <= tNewD2E ? tNewD2E - 1 : tNewD2E;
+            vNewE2M   <= vNewE;
         end
     end
-    logic   [31:0]  v2EX2DM;
-    logic   [31:0]  vEX2DM;
+    logic   [31:0]  v2E2M;
+    logic   [31:0]  vE2M;
     always@(posedge clk) begin // other register
         if(reset) begin
-            v2EX2DM <= 32'd0;
-            vEX2DM  <= 32'd0;
+            v2E2M <= 32'd0;
+            vE2M  <= 32'd0;
         end
         else begin
-            v2EX2DM <= v2EX;
-            vEX2DM  <= resAluEX;
+            v2E2M <= v2E;
+            vE2M  <= resAluE;
         end
     end
     
-    // Data Memory (DM)
-    // Data Memory (DM)
+    // Data Memory (M)
+    // Data Memory (M)
 
-    logic   [4:0]   a2DM;
-    logic   [31:0]  v2DM;
-    assign  a2DM    = instrEX2DM[`A2];
+    logic   [4:0]   a2M;
+    logic   [31:0]  v2M;
+    assign  a2M    = instrE2M[`A2];
     always@(*) begin // trans
-        if(a2DM != 0) begin
-            if(a2DM == aNewDM2RW)
-                v2DM = tNewDM2RW ? v2EX2DM : vNewDM2RW;
+        if(a2M != 0) begin
+            if(a2M == aNewM2W)
+                v2M = tNewM2W ? v2E2M : vNewM2W;
             else
-                v2DM = v2EX2DM;
+                v2M = v2E2M;
         end
-        else v2DM = v2EX2DM;
+        else v2M = v2E2M;
     end
 
-    logic   [31:0]  aDMDM;
-    logic   [31:0]  wDataDMDM;
-    assign  aDMDM       = vEX2DM;
-    assign  wDataDMDM   = v2DM;
-    logic           wEnDMDM;
+    logic   [31:0]  aDmM;
+    logic   [31:0]  wDataDmM;
+    assign  aDmM        = vE2M;
+    assign  wDataDmM    = v2M;
+    logic           wEnDmM;
     always@(*) begin
-        if(`SW_DM)
-            wEnDMDM = 1'b1;
+        if(`SW_M)
+            wEnDmM = 1'b1;
         else
-            wEnDMDM = 1'b0;
+            wEnDmM = 1'b0;
     end
-    logic   [31:0]  vDMDM;
+    logic   [31:0]  vDmM;
     DM DM_0(.clk(clk), .reset(reset),
-    .a(aDMDM[13:2]), .wData(wDataDMDM), .wEn(wEnDMDM),
-    .v(vDMDM), .pc(pcEX2DM)
+    .a(aDmM[13:2]), .wData(wDataDmM), .wEn(wEnDmM),
+    .v(vDmM), .pc(pcE2M)
     );
 
-    logic   [31:0]  vDM;
-    assign  vDM = (`LW_DM) ? vDMDM : vEX2DM;
+    logic   [31:0]  vM;
+    assign  vM = (`LW_M) ? vDmM : vE2M;
     
-    logic   [31:0]  vNewDM;
-    assign  vNewDM = (`LW_DM) ? vDMDM : vNewEX2DM;
+    logic   [31:0]  vNewM;
+    assign  vNewM = (`LW_M) ? vDmM : vNewE2M;
     
-    // Data Memory to Register Write (DM2RW)
-    // Data Memory to Register Write (DM2RW)
+    // Data Memory to Register Write (M2W)
+    // Data Memory to Register Write (M2W)
     
-    /* Declare move to RR
-    logic   [31:0]  pcDM2RW; */
-    logic   [31:0]  instrDM2RW;
+    /* Declare move to D
+    logic   [31:0]  pcM2W; */
+    logic   [31:0]  instrM2W;
     always@(posedge clk) begin // pc, instruction
         if(reset) begin
-            pcDM2RW     <= 32'd0;
-            instrDM2RW  <= 32'd0;
+            pcM2W     <= 32'd0;
+            instrM2W  <= 32'd0;
         end
         else begin
-            pcDM2RW     <= pcEX2DM;
-            instrDM2RW  <= instrEX2DM;
+            pcM2W     <= pcE2M;
+            instrM2W  <= instrE2M;
         end
     end
     always@(posedge clk) begin // aNew, tNew, vNew
         if(reset) begin
-            aNewDM2RW   <= 5'd0;
-            tNewDM2RW   <= 2'd0;
-            vNewDM2RW   <= 32'd0;
+            aNewM2W   <= 5'd0;
+            tNewM2W   <= 2'd0;
+            vNewM2W   <= 32'd0;
         end
         else begin
-            aNewDM2RW   <= aNewEX2DM;
-            tNewDM2RW   <= tNewEX2DM ? tNewEX2DM - 1 : tNewEX2DM;
-            vNewDM2RW   <= vNewDM;
+            aNewM2W   <= aNewE2M;
+            tNewM2W   <= tNewE2M ? tNewE2M - 1 : tNewE2M;
+            vNewM2W   <= vNewM;
         end
     end
-    logic   [31:0]  vDM2RW;
+    logic   [31:0]  vM2W;
     always@(posedge clk) begin // other register
         if(reset)
-            vDM2RW  <= 32'd0;
+            vM2W  <= 32'd0;
         else
-            vDM2RW  <= vDM;
+            vM2W  <= vM;
     end
     
-    // Register Write (RW)
-    // Register Write (RW)
+    // Register Write (W)
+    // Register Write (W)
     
-    /* Declare move to RR
-    logic   [4:0]   aGrfRW;
-    logic   [31:0]  wDataGrfRW;
-    logic           wEnGrfRW; */
+    /* Declare move to D
+    logic   [4:0]   aGrfW;
+    logic   [31:0]  wDataGrfW;
+    logic           wEnGrfW; */
     always@(*) begin
-        if(`ADD_RW || `SUB_RW) begin
-            aGrfRW      = instrDM2RW[`A3];
-            wDataGrfRW  = vDM2RW;
-            wEnGrfRW    = 1'b1;
+        if(`ADD_W || `SUB_W) begin
+            aGrfW      = instrM2W[`A3];
+            wDataGrfW  = vM2W;
+            wEnGrfW    = 1'b1;
         end
-        else if(`ORI_RW || `LW_RW || `LUI_RW) begin
-            aGrfRW      = instrDM2RW[`A2];
-            wDataGrfRW  = vDM2RW;
-            wEnGrfRW    = 1'b1;
+        else if(`ORI_W || `LW_W || `LUI_W) begin
+            aGrfW      = instrM2W[`A2];
+            wDataGrfW  = vM2W;
+            wEnGrfW    = 1'b1;
         end
-        else if(`JAL_RW) begin
-            aGrfRW      = 5'd31;
-            wDataGrfRW  = pcDM2RW + 8;
-            wEnGrfRW    = 1'b1; 
+        else if(`JAL_W) begin
+            aGrfW      = 5'd31;
+            wDataGrfW  = pcM2W + 8;
+            wEnGrfW    = 1'b1; 
         end
         else begin
-            aGrfRW      = 5'd0;
-            wDataGrfRW  = 32'd0;
-            wEnGrfRW    = 1'b0;
+            aGrfW      = 5'd0;
+            wDataGrfW  = 32'd0;
+            wEnGrfW    = 1'b0;
         end
     end
 endmodule
