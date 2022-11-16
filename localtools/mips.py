@@ -10,4 +10,3 @@ def readFile(filePath):
 
 codePath = "../P5/data/code.txt"
 codeText = readFile(codePath)
-
