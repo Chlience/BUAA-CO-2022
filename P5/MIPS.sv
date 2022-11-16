@@ -43,7 +43,6 @@ module MIPS(
     always@(*) begin // Stall
         if(a1Use != 0) begin
             if(a1Use == aNewRR2EX) begin
-                $display("%d", (t1Use < tNewRR2EX));
                 a1StallRR2EX = (t1Use < tNewRR2EX);
                 a1StallEX2DM = 1'd0;
                 a1StallDM2RW = 1'd0;
@@ -139,38 +138,44 @@ module MIPS(
     always@(*) begin // aUse, tUse
         if(`ADD_RR || `SUB_RR) begin
             a1Use = instrIF2RR[`A1];
-            a2Use = instrIF2RR[`A2];
             t1Use = 2'd1;
+            a2Use = instrIF2RR[`A2];
             t2Use = 2'd1;
         end
         else if(`LW_RR) begin
             a1Use = instrIF2RR[`A1];
-            a2Use = 5'd0;
             t1Use = 2'd1;
+            a2Use = 5'd0;
             t2Use = 2'd0;
         end
         else if(`SW_RR) begin
             a1Use = instrIF2RR[`A1];
-            a2Use = instrIF2RR[`A2];
             t1Use = 2'd1;
+            a2Use = instrIF2RR[`A2];
             t2Use = 2'd2;
         end
         else if(`ORI_RR) begin
             a1Use = instrIF2RR[`A1];
-            a2Use = 5'd0;
             t1Use = 2'd1;
+            a2Use = 5'd0;
             t2Use = 2'd0;
         end
         else if(`BEQ_RR) begin
             a1Use = instrIF2RR[`A1];
-            a2Use = instrIF2RR[`A2];
             t1Use = 2'd0;
+            a2Use = instrIF2RR[`A2];
+            t2Use = 2'd0;
+        end
+        else if(`JR_RR) begin
+            a1Use = instrIF2RR[`A1];
+            t1Use = 2'd0;
+            a2Use = 5'd0;
             t2Use = 2'd0;
         end
         else begin
             a1Use = 5'd0;
-            a2Use = 5'd0;
             t1Use = 2'd0;
+            a2Use = 5'd0;
             t2Use = 2'd0;
         end
     end
@@ -233,6 +238,14 @@ module MIPS(
             jpcRR   = pcIF + {{14{instrIF2RR[15]}}, instrIF2RR[`IMM16], 2'b00}; // following the branch
             jpcEnRR = (v1RR == v2RR);
         end
+        else if(`JAL_RR) begin
+            jpcRR   = {pcIF[31:28], instrIF2RR[`IMM26], 2'b00};
+            jpcEnRR = 1'b1;
+        end
+        else if(`JR_RR) begin
+            jpcRR   = v1RR;
+            jpcRR   = 1'b1;
+        end
         else begin
             jpcRR   = 32'b0;
             jpcEnRR = 1'b0;
@@ -257,6 +270,11 @@ module MIPS(
             aNewRR  = instrIF2RR[`A2];
             tNewRR  = 2'd3;
             vNewRR  = 32'd0;
+        end
+        else if(`JAL_RR) begin
+            aNewRR  = 5'd31;
+            tNewRR  = 2'd1;
+            vNewRR  = pcIF2RR + 8;
         end
         else begin
             aNewRR  = 5'd0;
@@ -493,6 +511,11 @@ module MIPS(
         else if(`ORI_RW || `LW_RW || `LUI_RW ) begin
             aGrfRW      = instrDM2RW[`A2];
             wDataGrfRW  = vDM2RW;
+            wEnGrfRW    = 1'b1;
+        end
+        else if(`JAL_RW) begin
+            aGrfRW      = 5'd31;
+            wDataGrfRW  = pcDM2RW + 8;
             wEnGrfRW    = 1'b1;
         end
         else begin

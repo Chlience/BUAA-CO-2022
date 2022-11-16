@@ -3,6 +3,7 @@
 `define A2          20:16
 `define A3          15:11
 `define IMM16       15:0
+`define IMM26       25:0
 
 `define OPTION1     31:26
 `define OPTION2     5:0
@@ -41,7 +42,7 @@
 `define LUI_RR      (instrIF2RR[`OPTION1] == `LUI)
 `define LUI_EX      (instrRR2EX[`OPTION1] == `LUI)
 `define LUI_DM      (instrEX2DM[`OPTION1] == `LUI)
-`define LUI_RW      (instrDM2RW[`OPTION1] == `LUI)
+`define LUI_RW      (instrDM2RW[`OPTION1] == `LUI)ORI
 
 `define ORI         (6'b001101)
 `define ORI_IF      (instrIF[`OPTION1]    == `ORI)
@@ -56,3 +57,17 @@
 `define BEQ_EX      (instrRR2EX[`OPTION1] == `BEQ)
 `define BEQ_DM      (instrEX2DM[`OPTION1] == `BEQ)
 `define BEQ_RW      (instrDM2RW[`OPTION1] == `BEQ)
+
+`define JAL         (6'b000011)
+`define JAL_IF      (instrIF[`OPTION1]    == `JAL)
+`define JAL_RR      (instrIF2RR[`OPTION1] == `JAL)
+`define JAL_EX      (instrRR2EX[`OPTION1] == `JAL)
+`define JAL_DM      (instrEX2DM[`OPTION1] == `JAL)
+`define JAL_RW      (instrDM2RW[`OPTION1] == `JAL)
+
+`define JR         (6'b001000)    // special
+`define JR_IF      ((instrIF[`OPTION1]    == `SPECIAL) && (instrIF[`OPTION2]    == `JR))     
+`define JR_RR      ((instrIF2RR[`OPTION1] == `SPECIAL) && (instrIF2RR[`OPTION2] == `JR))
+`define JR_EX      ((instrRR2EX[`OPTION1] == `SPECIAL) && (instrRR2EX[`OPTION2] == `JR))
+`define JR_DM      ((instrEX2DM[`OPTION1] == `SPECIAL) && (instrEX2DM[`OPTION2] == `JR))
+`define JR_RW      ((instrDM2RW[`OPTION1] == `SPECIAL) && (instrDM2RW[`OPTION2] == `JR))

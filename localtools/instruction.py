@@ -33,3 +33,14 @@ def beq(rs, rt, offset):
     OPTION1 = 0b000100
     binString = f"{OPTION1:0>6b}{rs:0>5b}{rt:0>5b}{offset:0>16b}"
     return int(binString, 2)
+
+def jal(instr_index):
+    OPTION1 = 0b000011
+    binString = f"{OPTION1:0>6b}{instr_index:0>26b}"
+    return int(binString, 2)
+
+def jr(rs):
+    OPTION1 = 0b000000
+    OPTION2 = 0b001000
+    binString = f"{OPTION1:0>6b}{rs:0>5b}{0:15>5b}{OPTION2:0>6b}"
+    return int(binString, 2)
