@@ -33,7 +33,7 @@ module IM(
     initial begin
         for(integer i = 0; i <= 4095; i = i + 1)
             instrReg[i] = 0;
-        $readmemh("/home/chlience/cscore/BUAA-CO/P5/data/code.txt", instrReg);
+        $readmemh("code.txt", instrReg);
+        // $readmemh("/home/chlience/cscore/BUAA-CO/P5/data/code.txt", instrReg);
     end
-
 endmodule

@@ -42,5 +42,10 @@ def jal(instr_index):
 def jr(rs):
     OPTION1 = 0b000000
     OPTION2 = 0b001000
-    binString = f"{OPTION1:0>6b}{rs:0>5b}{0:15>5b}{OPTION2:0>6b}"
+    binString = f"{OPTION1:0>6b}{rs:0>5b}{0:0>15b}{OPTION2:0>6b}"
+    return int(binString, 2)
+
+def lui(rt, immediate):
+    OPTION1 = 0b001111
+    binString = f"{OPTION1:0>6b}{0:0>5b}{rt:0>5b}{immediate:0>16b}"
     return int(binString, 2)

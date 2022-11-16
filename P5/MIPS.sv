@@ -20,7 +20,7 @@
 // 
 // 
 //////////////////////////////////////////////////////////////////////////////////
-module MIPS(
+module mips(
     input   clk,
     input   reset
     );
@@ -114,7 +114,7 @@ module MIPS(
     
     PC  PC_0(.clk(clk), .reset(reset), .pc(pcIF), .npc(npcIF), .npcEn(npcEnIF));
     IM  IM_0(.pc(pcIF), .instr(instrIF));
-    NPC NPC_0(.pc(pcIF), .npc(npcIF), .jpc(jpcRR), .jpcEn(jpcEnRR));
+    NPC NPC_0(.pc(pcIF), .jpc(jpcRR), .jpcEn(jpcEnRR), .npc(npcIF));
     
     // Instruction Fetch to Register Read
     // Instruction Fetch to Register Read
@@ -244,7 +244,7 @@ module MIPS(
         end
         else if(`JR_RR) begin
             jpcRR   = v1RR;
-            jpcRR   = 1'b1;
+            jpcEnRR   = 1'b1;
         end
         else begin
             jpcRR   = 32'b0;
@@ -258,23 +258,28 @@ module MIPS(
     always@(*) begin // aNew, tNew, vNew
         if(`ADD_RR || `SUB_RR) begin
             aNewRR  = instrIF2RR[`A3];
-            tNewRR  = 2'd2;
+            tNewRR  = 2'd1;
             vNewRR  = 32'd0;
         end
         else if(`ORI_RR) begin
             aNewRR  = instrIF2RR[`A2];
-            tNewRR  = 2'd2;
+            tNewRR  = 2'd1;
             vNewRR  = 32'd0;
         end
         else if(`LW_RR) begin
             aNewRR  = instrIF2RR[`A2];
-            tNewRR  = 2'd3;
+            tNewRR  = 2'd2;
             vNewRR  = 32'd0;
         end
         else if(`JAL_RR) begin
             aNewRR  = 5'd31;
-            tNewRR  = 2'd1;
+            tNewRR  = 2'd0;
             vNewRR  = pcIF2RR + 8;
+        end
+        else if(`LUI_RR) begin
+            aNewRR  = instrIF2RR[`A2];
+            tNewRR  = 2'd0;
+            vNewRR  = {instrIF2RR[`IMM16], 16'b0};
         end
         else begin
             aNewRR  = 5'd0;
@@ -306,7 +311,7 @@ module MIPS(
         end
         else begin
             aNewRR2EX   <= aNewRR;
-            tNewRR2EX   <= tNewRR ? tNewRR - 1 : tNewRR;
+            tNewRR2EX   <= tNewRR;
             vNewRR2EX   <= vNewRR;
         end
     end
@@ -508,7 +513,7 @@ module MIPS(
             wDataGrfRW  = vDM2RW;
             wEnGrfRW    = 1'b1;
         end
-        else if(`ORI_RW || `LW_RW || `LUI_RW ) begin
+        else if(`ORI_RW || `LW_RW || `LUI_RW) begin
             aGrfRW      = instrDM2RW[`A2];
             wDataGrfRW  = vDM2RW;
             wEnGrfRW    = 1'b1;
@@ -516,7 +521,7 @@ module MIPS(
         else if(`JAL_RW) begin
             aGrfRW      = 5'd31;
             wDataGrfRW  = pcDM2RW + 8;
-            wEnGrfRW    = 1'b1;
+            wEnGrfRW    = 1'b1; 
         end
         else begin
             aGrfRW      = 5'd0;

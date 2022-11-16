@@ -37,13 +37,6 @@
 `define SW_DM       (instrEX2DM[`OPTION1] == `SW)
 `define SW_RW       (instrDM2RW[`OPTION1] == `SW)
 
-`define LUI         (6'b001111)
-`define LUI_IF      (instrIF[`OPTION1]    == `LUI)
-`define LUI_RR      (instrIF2RR[`OPTION1] == `LUI)
-`define LUI_EX      (instrRR2EX[`OPTION1] == `LUI)
-`define LUI_DM      (instrEX2DM[`OPTION1] == `LUI)
-`define LUI_RW      (instrDM2RW[`OPTION1] == `LUI)ORI
-
 `define ORI         (6'b001101)
 `define ORI_IF      (instrIF[`OPTION1]    == `ORI)
 `define ORI_RR      (instrIF2RR[`OPTION1] == `ORI)
@@ -71,3 +64,10 @@
 `define JR_EX      ((instrRR2EX[`OPTION1] == `SPECIAL) && (instrRR2EX[`OPTION2] == `JR))
 `define JR_DM      ((instrEX2DM[`OPTION1] == `SPECIAL) && (instrEX2DM[`OPTION2] == `JR))
 `define JR_RW      ((instrDM2RW[`OPTION1] == `SPECIAL) && (instrDM2RW[`OPTION2] == `JR))
+
+`define LUI         (6'b001111)
+`define LUI_IF      (instrIF[`OPTION1]    == `LUI)
+`define LUI_RR      (instrIF2RR[`OPTION1] == `LUI)
+`define LUI_EX      (instrRR2EX[`OPTION1] == `LUI)
+`define LUI_DM      (instrEX2DM[`OPTION1] == `LUI)
+`define LUI_RW      (instrDM2RW[`OPTION1] == `LUI)

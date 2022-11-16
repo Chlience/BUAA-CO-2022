@@ -23,7 +23,7 @@
 module MIPS_TB();
     logic   clk;
     logic   reset;
-    MIPS uut(
+    mips uut(
         .clk(clk),
         .reset(reset)
     );
