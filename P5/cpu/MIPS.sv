@@ -100,8 +100,8 @@ module mips(
         Stall   = a1Stall    | a2Stall;
     end
     
-    // Instrution Fetch (F)
-    // Instrution Fetch (F)
+    // Fetch (F)
+    // Fetch (F)
     
     logic   [31:0]  pcF;
     logic   [31:0]  npcF;
@@ -116,8 +116,8 @@ module mips(
     IM  IM_0(.pc(pcF), .instr(instrF));
     NPC NPC_0(.pc(pcF), .jpc(jpcD), .jpcEn(jpcEnD), .npc(npcF));
     
-    // Instruction Fetch to Register Read
-    // Instruction Fetch to Register Read
+    // Fetch to Decode
+    // Fetch to Decode
     
     logic   [31:0]  pcF2D;
     logic   [31:0]  instrF2D;
@@ -132,8 +132,8 @@ module mips(
         end
     end
     
-    // Register Read (D)
-    // Register Read (D)
+    // Decode (D)
+    // Decode (D)
     
     always@(*) begin // aUse, tUse
         if(`ADD_D || `SUB_D) begin
@@ -288,8 +288,8 @@ module mips(
         end
     end
     
-    // Register Read to Execute
-    // Register Read to Execute
+    // Decode to Execute
+    // Decode to Execute
     
     logic   [31:0]  pcD2E;
     logic   [31:0]  instrD2E;
@@ -385,8 +385,8 @@ module mips(
     logic   [31:0]  vNewE;
     assign  vNewE  = (`ADD_E || `SUB_E || `ORI_E) ? resAluE : vNewD2E;
     
-    // Execute to Data Memory (E2M)
-    // Execute to Data Memory (E2M)
+    // Execute to Memory (E2M)
+    // Execute to Memory (E2M)
     
     logic   [31:0]  pcE2M;
     logic   [31:0]  instrE2M;
@@ -425,8 +425,8 @@ module mips(
         end
     end
     
-    // Data Memory (M)
-    // Data Memory (M)
+    // Memory (M)
+    // Memory (M)
 
     logic   [4:0]   a2M;
     logic   [31:0]  v2M;
@@ -464,8 +464,8 @@ module mips(
     logic   [31:0]  vNewM;
     assign  vNewM = (`LW_M) ? vDmM : vNewE2M;
     
-    // Data Memory to Register Write (M2W)
-    // Data Memory to Register Write (M2W)
+    // Memory to Writeback (M2W)
+    // Memory to Writeback (M2W)
     
     /* Declare move to D
     logic   [31:0]  pcM2W; */
@@ -500,8 +500,8 @@ module mips(
             vM2W  <= vM;
     end
     
-    // Register Write (W)
-    // Register Write (W)
+    // Writeback (W)
+    // Writeback (W)
     
     /* Declare move to D
     logic   [4:0]   aGrfW;

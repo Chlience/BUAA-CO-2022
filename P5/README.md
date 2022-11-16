@@ -2,7 +2,7 @@
 
 ## 结构
 
-
+![cpu.drawio.svg](https://github.com/Chlience/BUAA-CO/blob/main/P5/cpu.drawio.svg)
 
 ## 原则
 
