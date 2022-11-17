@@ -1,4 +1,4 @@
-from instruction import *
+from Instruction import *
 import random
 
 def writeFile(filePath, str):
