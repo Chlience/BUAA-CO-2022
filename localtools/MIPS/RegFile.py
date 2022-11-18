@@ -18,7 +18,7 @@ class RegFile:
             addr = zeroEXTnum(reg_to_index[addr_list])
             if addr>0 and addr<32:
                 cls.__reg[addr] = data_list&0xffffffff
-                print(f"@{PC._value:0>8x}: ${addr:2d} <= {cls.__reg[addr]:0>8x}")
+                print(f"@{PC._value:0>8x}: ${addr:2d} <= {cls.__reg[addr]:0>8x}",end="")
             elif addr != 0 :
                 raise SystemError(f"reg file Waddr {addr:2d} out of 0-31")
         else :
@@ -26,7 +26,7 @@ class RegFile:
                 addr = zeroEXTnum(reg_to_index[addrstr])
                 if addr>0 and addr<32:
                     cls.__reg[addr] = data&0xffffffff
-                    print(f"@{PC._value:0>8x}: ${addr:2d} <= {cls.__reg[addr]:0>8x}")
+                    print(f"@{PC._value:0>8x}: ${addr:2d} <= {cls.__reg[addr]:0>8x}",end="")
                 elif addr != 0 :
                     raise SystemError(f"reg file Waddr {addr:2d} out of 0-31")
         
