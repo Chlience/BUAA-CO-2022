@@ -132,8 +132,6 @@ def makeCode():
     instrList += fullRegs(regs)
     instrList += testALU(regs)
     instrList += clearRegs(regs)
-
-
     
     instrList += fullRegs(regs)
     instrList += fullRams(8, rams)
