@@ -102,7 +102,7 @@ class ExCute:
     def __ori(source:str):
         rt,rs,imm=ExCute.__slipt_code(source)
         A=RegFile.read(rs)
-        B=sigEXTnum_hex(imm,4)
+        B=zeroEXTnum_hex(imm)
         RegFile.write(rt,A|B)
     @staticmethod
     def __lw(source:str):
