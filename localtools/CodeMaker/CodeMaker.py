@@ -9,11 +9,9 @@ def readFile(filePath):
     with open(filePath, "r") as f:
         return f.readlines()
 
-def writeCode(codePath, instrList):
+def writeCode(instrList):
     codeText = "\n".join([f"{instr:0>8x}" for instr in instrList])
-    writeFile(codePath, codeText)
     print(codeText)
-    print(f"len = {len(instrList)}")
 
 def randReg(regs):
     return regs[random.randint(0, len(regs) - 1)]
@@ -39,7 +37,7 @@ def randLui(regs):
 def fullReg(reg):
     instrList = []
     instrList += [lui(reg, randImm16())]
-    instrList += [ori(reg, 0, randImm16())]
+    instrList += [ori(reg, reg, randImm16())]
     return instrList
     
 def fullRegs(regs):
@@ -216,6 +214,5 @@ def makeCode():
 
 if __name__ == "__main__":
     code = makeCode()
-    codePath = "code.txt"
-    writeCode(codePath, code)
+    writeCode(code)
     
