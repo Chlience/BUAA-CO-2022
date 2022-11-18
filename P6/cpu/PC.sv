@@ -5,9 +5,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 11/12/2022 12:38:52 PM
+// Create Date: 11/12/2022 12:11:37 PM
 // Design Name: 
-// Module Name: IM
+// Module Name: PC
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -21,18 +21,24 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-module IM(
-    input   [31:0] pc,
-    output  [31:0] instr
+module PC(
+    input   clk,
+    input   reset,
+    input   npcEn,
+    input   [31:0]  npc,
+    output  [31:0]  pc
     );
-    logic   [31:0] instrReg[4096];
-    logic   [31:0] pcSub;
     
-    assign pcSub = pc - `PCInitial;
-    assign instr = instrReg[pcSub[13:2]];
-    initial begin
-        for(integer i = 0; i <= 4095; i = i + 1)
-            instrReg[i] = 0;
-        $readmemh("code.txt", instrReg);
+    logic   [31:0]  pcReg;
+    
+    always@(posedge clk) begin
+        if(reset) begin
+            pcReg <= `PCInitial;
+        end
+        else if(npcEn) begin
+            pcReg <= npc;
+        end
     end
+    
+    assign pc = pcReg;
 endmodule
