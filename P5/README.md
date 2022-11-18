@@ -117,6 +117,13 @@ CPU 由串行变为并行后，虽然单条指令不同阶段之间互不影响�
 
 本 CPU 采取分布式译码
 
+### 伪代码
+
+```
+assign 指令 1 = instr match 指令 1 形式
+assign 控制信号 = (指令 1 || 指令 2 || ...) ? 1 : 0;
+```
+
 *tip: 若使能信号默认低电平，只需关注当前指令数据通路上的信号控制，其他通路数据最后将被忽略*
 
 ## 阻塞/转发策略
@@ -185,6 +192,33 @@ CPU 由串行变为并行后，虽然单条指令不同阶段之间互不影响�
   * 注：`D` 级时由于 `v1`, `v2` 从 `GRF` 取得，故该选择器需要放置在 `GRF` 后
 
 具体结构详见顶部 CPU 设计图
+
+### 伪代码
+```
+// 在 D 级检查 a(1,2)Use, t(1,2)Use 并在此处暂停，保证能及时取得数据
+aUse = ...
+tUse = ...
+// 在 D 级产生 aNew, tNew
+aNewD = ...
+tNewD = ...
+vNewD = ...
+
+// 每级流水均需获取转发值
+if(a1(D,E,M) == aNewReg(E,M,W) && tNewReg(E,M,W) == 0)
+  v1AfterForward(D,E,M) = vNewReg(E,M,W)
+else
+  v1AfterForward(D,E,M) = v1BeforeForward(D,E,M)
+// 需要流水 a(t,v)NewReg
+when(时序逻辑)
+  aNewRegNext <= aNewRegThis
+  tNewRegNext <= tNewRegThis ? tNewRegThis - 1 : tNewRegThis
+  vNewRegNext <= vNew  // vNew 需要在组合逻辑阶段取得真实值，后存入 Reg
+
+// 某条指令计算出结果时更新 vNew
+// 此时恰好 tNew == 0，当其进入寄存器时即可作用于转发
+if(当前指令计算出结果)
+  vNew = Ans
+```
 
 ## 原则
 
