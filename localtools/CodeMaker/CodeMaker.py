@@ -108,6 +108,25 @@ def testJump():
     instrList = []
     return instrList
 
+def testJr(regs, offsetBefore, reg=-1):
+    instrList = []
+    if(reg == - 1):
+        reg  = randReg(regs)
+        offsetnow = offsetBefore + len(instrList) + 1 + 2
+        offset = offsetnow + random.randint(1, 5)
+        pc = 0x3000 + (offset << 2)
+        instrList += [lui(reg, pc >> 16)]
+        instrList += [ori(reg, 0, pc % (1 << 16))]
+    reg1 = randReg(regs)
+    instrList += [jr(reg)]
+    instrList += randBranchDelayInstr(regs)
+    instrList += [ori(reg1, 0, 1)]
+    instrList += [add(reg1, reg1, reg1)]
+    instrList += [add(reg1, reg1, reg1)]
+    instrList += [add(reg1, reg1, reg1)]
+    instrList += [add(reg1, reg1, reg1)]
+    instrList += [add(reg1, reg1, reg1)]
+    return instrList
 
 def testForward(regs):
     instrList = []
