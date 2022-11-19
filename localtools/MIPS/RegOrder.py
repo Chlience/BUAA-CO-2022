@@ -4,7 +4,7 @@ class RegOrder :
         if isinstance(value,RegOrder) :
             self._value = value._value
         elif type(value) is str :
-            value = value.replace(" ","")
+            value = value.strip().replace(" ","")
             if value[:2] == "0x" :
                 self._value = format(int(value,16),"032b")
             elif value[:2] == "0o" :
