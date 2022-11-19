@@ -4,7 +4,7 @@ class RegOrder :
         if isinstance(value,RegOrder) :
             self._value = value._value
         elif type(value) is str :
-            value = value.strip()
+            value = value.replace(" ","")
             if value[:2] == "0x" :
                 self._value = format(int(value,16),"032b")
             elif value[:2] == "0o" :
@@ -14,6 +14,8 @@ class RegOrder :
             else :
                 if re.search(r'[a-f]',value,flags=re.I) or len(value)==8:
                     self._value = format(int(value,16),"032b")
+                elif all(i=="0" or i=="1" for i in value) and len(value)==32:
+                    self._value=value
                 else :
                     self._value = format(int(value),"032b")
                 if len(self._value) != 32 :

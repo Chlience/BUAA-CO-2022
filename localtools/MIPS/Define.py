@@ -157,26 +157,26 @@ def sigEXTnum(binstrnum,orilength="",exlength=32) :
         return int((binstrnum[0]*differ)+binstrnum,2)
 
 def zeroEXTnum_hex(hexstrnum) :
-    return int(hexstrnum,16)
+    if hexstrnum[0] == '-':
+        return 0xffff^((int(hexstrnum[1:],16) if hexstrnum[1:3]=="0x" else int(hexstrnum[1:]))-1)
+    else:
+        return int(hexstrnum,16) if hexstrnum[:2]=="0x" else int(hexstrnum)
 
 def sigEXTnum_hex(hexstrnum:str,orilength="",exlength=8) :
-    if hexstrnum[:2] == "0x" :
-        hexstrnum = hexstrnum[2:]
-    if orilength == "":
-        differ = exlength - len(hexstrnum)
+    if hexstrnum[0] == '-':
+        hexstrnum = int(hexstrnum[1:],16) if hexstrnum[1:3] == "0x" else int(hexstrnum[1:])
+        return ((1<<exlength*4)-1)^(hexstrnum-1)
     else :
-        temp = exlength -len(hexstrnum)
-        differ = exlength - orilength
-        differ = temp if temp < differ else differ
-    if differ < 0:
-        raise SystemError("the length of num"+hexstrnum+f"beyond {exlength:d}")
-    else :
-        sign = "f" if hexstrnum[0] >= "8" and (orilength=="" or len(hexstrnum)>=orilength) else "0"
-        return int(sign*differ+hexstrnum,16)
+        hexstrnum = int(hexstrnum,16) if hexstrnum[:2] == "0x" else int(hexstrnum)
+        sign = "1" if hexstrnum&(1<<(orilength*4-1))!=0 else "0"
+        hexstrnum = format(hexstrnum&0xffffffff,"b")
+        distances = exlength*4 - len(hexstrnum)
+        return int(sign*distances+hexstrnum,2)
 
 def signed(num:int):
-    if num&0x800000000!=0 :
-        return ~num+1
+    num&=0xffffffff
+    if num&0x80000000!=0 :
+        return -((0xffffffff^num)+1)
     else:
         return num
 

@@ -16,6 +16,7 @@ class ExCute:
         return (i for i in re.split("[\s,()]",code) if i!="")
     @staticmethod
     def __delaying(enalble=True,link=False):
+        if __name__=='__main__' : print("")
         if __name__!='__main__' and enalble :
             if link == False : PC.next()
             ExCute.run(PC.getInstruct())
@@ -72,11 +73,11 @@ class ExCute:
     @staticmethod
     def __jr(source:str):
         rs = source.strip()
-
+        nPC = RegFile.read(rs)
         # 延迟槽
         ExCute.__delaying()
 
-        PC.next(RegFile.read(rs))
+        PC.next(nPC)
     
     @staticmethod
     def __addi(source:str):
@@ -217,7 +218,7 @@ if __name__ == "__main__" :
             continue
         if cin.find("exit") != -1:
             break
-        PC.loadInstruct(cin,False)
-        ExCute.run(cin)
+        PC.loadInstruct(cin)
+        ExCute.run(PC.getInstruct())
         while PC._endsignal != True :
             ExCute.run(PC.getInstruct())

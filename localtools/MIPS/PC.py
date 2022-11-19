@@ -14,25 +14,26 @@ class PC:
         raise SystemError("it's static class!!!")
 
     @classmethod
-    def loadInstruct(cls,ins,machine=True) :
+    def loadInstruct(cls,ins) :
         if type(ins) is str:
             if ins == "":
                 pass
             else :
-                cls.__order [cls.__imend] = DisAssembler.decode(RegOrder(ins)) if machine else ins
+                cls.__order [cls.__imend] = DisAssembler.decode(RegOrder(ins)) if ins.isalnum() else ins
                 cls.__imend += 1
         elif type(ins) is list:
             for oneins in ins:
                 if oneins == "":
                     continue
                 if type(oneins) is str:
-                    cls.__order[cls.__imend] = DisAssembler.decode(RegOrder(oneins)) if machine else oneins
+                    cls.__order[cls.__imend] = DisAssembler.decode(RegOrder(oneins)) if oneins.isalnum() else oneins
                     cls.__imend += 1
                 else:
                     raise SystemError("only str can be load in IM")
     @classmethod
     def loadMachineCode(cls,ins) :
         if type (ins) is str:
+            ins = ins.replace(" ","")
             ins.strip()
             if ins == "":
                 pass
@@ -43,6 +44,7 @@ class PC:
                 raise SystemError("code {} is illegal".format(ins))
         elif type (ins) is list:
             for oneins in ins:
+                oneins = oneins.replace(" ","")
                 oneins = oneins.strip()
                 if oneins == "":
                     pass
