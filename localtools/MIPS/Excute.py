@@ -9,7 +9,7 @@ class ExCute:
     def __init__(self) -> None:
         raise SystemError("it's static class!!!")
     
-    
+    __begin = True
     
     @staticmethod
     def __slipt_code(code:str):
@@ -193,18 +193,21 @@ class ExCute:
     def run(codes:str|list):
         if type(codes) is list:
             for code in codes:
+                debuginf = PC.getMachineCOde()+"\t"+PC.getInstruct()
+                print(format(debuginf,"<40"),end='')
                 if code == "nop" :
                     PC.next()
                     continue
                 op,source = re.split("\s",code,1)
                 ExCute.__OP_TO_FUNCTION[op](source)
         elif type(codes) is str:
+            debuginf = PC.getMachineCOde()+"\t"+PC.getInstruct()
+            print(format(debuginf,"<40"),end="")
             if codes == "nop":
                 PC.next()
             else:
                 op,source = re.split("\s",codes,1)
                 ExCute.__OP_TO_FUNCTION[op](source)
-
 
 
 if __name__ == "__main__" :

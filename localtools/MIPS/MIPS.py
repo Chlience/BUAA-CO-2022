@@ -12,5 +12,6 @@ if __name__ == '__main__':
     codePath = sys.argv[1]
     code = readFile(codePath)
     PC.loadInstruct(code)
+    PC.loadMachineCode(code)
     while PC._endsignal!=True :
         ExCute.run(PC.getInstruct())

@@ -51,21 +51,21 @@ class DisAssembler:
         _, rs, rt, rd, shamt, funct = code.split([6, 11, 16, 21, 26, 32])
         funct = R_index_to_inst[funct]
         if R_format[funct] == 0b111 :
-            return "{0}\t{3}, {1}, {2}".format(
+            return "{0:<9} {3:<3}, {1:<3}, {2:<3}".format(
                 funct,
                 index_to_reg[rs],
                 index_to_reg[rt],
                 index_to_reg[rd]
             )
         elif R_format[funct] == 0b011 :
-            return "{0}\t{2}, {1}, {3:#x}".format(
+            return "{0:<9} {2:<3}, {1:<3}, {3:#x}".format(
                 funct,
                 index_to_reg[rt],
                 index_to_reg[rd],
                 int(shamt,2)
             )
         elif R_format[funct] == 0b100 :
-            return "{0}\t{1}".format(
+            return "{0:<9} {1:<3}".format(
                 funct,
                 index_to_reg[rs]
             )
@@ -76,28 +76,28 @@ class DisAssembler:
         op, rs, rt, imm = code.split([6, 11, 16, 32])
         funct = I_index_to_inst[op]
         if I_format[funct] == "cal":
-            return "{0}\t{2}, {1}, {3:#x}".format(
+            return "{0:<9} {2:<3}, {1:<3}, {3:#x}".format(
                 funct,
                 index_to_reg[rs],
                 index_to_reg[rt],
                 int(imm,2)
             )
         elif I_format[funct] == "load" or I_format[funct] == "store":
-            return "{0}\t{2}, {3:#x}({1})".format(
+            return "{0:<9} {2:<3}, {3:#x}({1})".format(
                 funct,
                 index_to_reg[rs],
                 index_to_reg[rt],
                 int(imm,2)
             )
         elif I_format[funct] == "branch" :
-            return "{0}\t{1}, {2}, {3:#x}".format(
+            return "{0:<9} {1:<3}, {2:<3}, {3:#x}".format(
                 funct,
                 index_to_reg[rs],
                 index_to_reg[rt],
                 int(imm,2)
             )
         elif I_format[funct] == "imm" :
-            return "{0}\t{1},{2:#x}".format(
+            return "{0:<9} {1:<3}, {2:#x}".format(
                 funct,
                 index_to_reg[rt],
                 int(imm,2)
@@ -106,7 +106,7 @@ class DisAssembler:
     def __J_decode(code:RegOrder):
         op,imm = code.split([6, 32])
         funct = J_index_to_inst[op]
-        return "{0}\t{1:#x}".format(
+        return "{0:<9} {1:#x}".format(
             funct,
             int(imm,2)
         )
