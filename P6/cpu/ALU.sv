@@ -70,8 +70,8 @@ module ALU(
 				result		= $signed(v1) < $signed(v2);
 				overflow	= 1'b0;
 			end
-			4'd9: begin // v1 < imm16 $signed
-				result		= $signed(v1) < $signed({{16{imm16[15]}}, imm16});
+			4'd9: begin // v1 < v2
+				result		= v1 < v2;
 				overflow	= 1'b0;
 			end
 			default: begin

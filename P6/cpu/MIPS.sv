@@ -110,14 +110,11 @@ module mips(
 			a2StallD2E = 1'd0;
 			a2StallM2W = 1'd0;
 		end
-		if(`MULT_D || `MULTU_D || `DIV_D || `DIVU_D || `MFHI_D || `MFLO_D || `MTHI_D || `MTLO_D) begin
-			mdStall = startMdE || busyMdE;
-		end
-		else
-			mdStall = 1'd0;
 		a1Stall =	a1StallD2E |	a1StallE2M 	|	a1StallM2W;
 		a2Stall = 	a2StallD2E |	a2StallE2M 	| 	a2StallM2W;
 		Stall   = 	a1Stall    | 	a2Stall		|	mdStall;
+
+		// mdStall move to E
 	end
 	
 	// Fetch (F)
@@ -156,13 +153,13 @@ module mips(
 	// Decode (D)
 	// Decode (D)
 	always@(*) begin // aUse, tUse
-		if(`ADD_D || `SUB_D || `AND_D || `OR_D || `SLT_D || `MULT_D || `MULTU_D || `DIV_D || `DIVU_D) begin
+		if(`ADD_D || `SUB_D || `AND_D || `OR_D || `SLT_D || `SLTU_D || `MULT_D || `MULTU_D || `DIV_D || `DIVU_D) begin
 			a1Use   = instrF2D[`A1];
 			t1Use   = 2'd1;
 			a2Use   = instrF2D[`A2];
 			t2Use   = 2'd1;
 		end
-		else if(`LB_D || `LH_D || `LW_D || `SLTI_D || `MTHI_D || `MTLO_D) begin
+		else if(`LB_D || `LH_D || `LW_D || `MTHI_D || `MTLO_D) begin
 			a1Use   = instrF2D[`A1];
 			t1Use   = 2'd1;
 			a2Use   = 5'd0;
@@ -283,12 +280,12 @@ module mips(
 	logic   [1:0]   tNewD;
 	logic   [31:0]  vNewD;
 	always@(*) begin // aNew, tNew, vNew
-		if(`ADD_D || `SUB_D || `AND_D || `OR_D || `SLT_D || `MFHI_D || `MFLO_D) begin
+		if(`ADD_D || `SUB_D || `AND_D || `OR_D || `SLT_D || `SLTU_D || `MFHI_D || `MFLO_D) begin
 			aNewD   = instrF2D[`A3];
 			tNewD   = 2'd1;
 			vNewD   = 32'd0;
 		end
-		else if(`ORI_D || `SLTI_D || `ADDI_D || `ANDI_D) begin
+		else if(`ORI_D || `ADDI_D || `ANDI_D) begin
 			aNewD   = instrF2D[`A2];
 			tNewD   = 2'd1;
 			vNewD   = 32'd0;
@@ -314,7 +311,7 @@ module mips(
 			vNewD   = 32'd0;
 		end
 	end
-	
+
 	// Decode to Execute
 	// Decode to Execute
 	
@@ -409,8 +406,8 @@ module mips(
 			optAluE	= 4'd7;
 		else if(`SLT_E)
 			optAluE = 4'd8;
-		else if(`SLTI_E)
-			optAluE	= 4'd9;
+		else if(`SLTU_E)
+			optAluE = 4'd9;
 		else if(`LUI_E)
 			optAluE	= 4'd15;
 		else
@@ -424,12 +421,12 @@ module mips(
 	logic	[2:0]	optMdE;
 	logic			startMdE;
 	always@(*) begin
-		optMdE		= 	`MULT_E		?	3'b000 :
-						`MULTU_E	?	3'b001 :
-						`DIV_E		?	3'b010 :
-						`DIVU_E		?	3'b011 :
-						`MTHI_E		?   3'b100 :
-										3'b101 ;
+		optMdE	= 	`MULT_E		?	3'b000 :
+					`MULTU_E	?	3'b001 :
+					`DIV_E		?	3'b010 :
+					`DIVU_E		?	3'b011 :
+					`MTHI_E		?   3'b100 :
+									3'b101 ;
 		startMdE	=	`MULT_E || `MULTU_E || `DIV_E || `DIVU_E || `MTHI_E || `MTLO_E;
 	end
 	logic			busyMdE;
@@ -439,13 +436,15 @@ module mips(
 	.v1(v1MdE), .v2(v2MdE), .opt(optMdE), .start(startMdE),
 	.busy(busyMdE), .hi(hiMdE), .lo(loMdE));
 
+	assign mdStall = (`MULT_D || `MULTU_D || `DIV_D || `DIVU_D || `MFHI_D || `MFLO_D || `MTHI_D || `MTLO_D) && (busyMdE || startMdE);
+
 	logic   [31:0]  resAluE;
 	ALU ALU_0(.v1(v1AluE), .v2(v2AluE), .imm16(imm16AluE), .opt(optAluE),
 	.res(resAluE)/*, .overf()*/);
 	
 	logic 	[31:0] 	vE;
 	always@(*) begin
-		if(`ADD_E || `SUB_E || `AND_E || `OR_E || `ORI_E || `SLT_E || `SLTI_E || `ADDI_E || `ANDI_E)
+		if(`ADD_E || `SUB_E || `AND_E || `OR_E || `ORI_E || `SLT_E || `SLTU_E || `ADDI_E || `ANDI_E)
 			vE = resAluE;
 		else if(`MFHI_E)
 			vE = hiMdE;
@@ -457,7 +456,7 @@ module mips(
 
 	logic   [31:0]  vNewE;
 	always@(*) begin
-		if(`ADD_E || `SUB_E || `AND_E || `OR_E || `ORI_E || `SLT_E || `SLTI_E || `ADDI_E || `ANDI_E)
+		if(`ADD_E || `SUB_E || `AND_E || `OR_E || `ORI_E || `SLT_E || `SLTU_E || `ADDI_E || `ANDI_E)
 			vNewE = resAluE;
 		else if(`MFHI_E)
 			vNewE = hiMdE;
@@ -524,23 +523,34 @@ module mips(
 	end
 
 	logic   [31:0]  aDmM;
+	assign  aDmM 	= vE2M;
 	logic   [31:0]  wDataDmM;
-	assign  aDmM        = vE2M;
-	assign  wDataDmM    = v2M;
 	logic   [3:0]   wByteEnDmM;
 	always@(*) begin
-		if(`SB_W)
-			wByteEnDmM 	= aDmM[1:0] == 	2'b00 ? 4'b0001 :
-										2'b01 ? 4'b0010 :
-										2'b10 ? 4'b0100 :
-												4'b1000;
-		else if(`SH_W)
-			wByteEnDmM 	= aDmM[1]	==	1'b0  ? 4'b0011 :
-												4'b1100 ;
-		else if(`SW_M)
-			wByteEnDmM = 4'b1111;
-		else
-			wByteEnDmM = 4'b0000;
+		if(`SB_M) begin
+			wByteEnDmM 	= 	aDmM[1:0] 	== 	2'b00 	? 	4'b0001 :
+							aDmM[1:0] 	==	2'b01 	? 	4'b0010 :
+							aDmM[1:0] 	==	2'b10 	? 	4'b0100 :
+														4'b1000 ;
+			wDataDmM 	= 	aDmM[1:0] 	== 	2'b00 	? 	{24'b0	, v2M[7:0]} 			:
+							aDmM[1:0] 	== 	2'b01 	? 	{16'b0	, v2M[7:0], 	8'b0 } 	:
+							aDmM[1:0] 	== 	2'b10 	? 	{8'b0 	, v2M[7:0], 	16'b0} 	:
+														{v2M[7:0], 24'b0}				;
+		end
+		else if(`SH_M) begin
+			wByteEnDmM 	= 	aDmM[1]	==	1'b0	? 	4'b0011 :
+													4'b1100 ;
+			wDataDmM 	=	aDmM[1]	== 	1'b0	? 	{16'b0	, v2M[15:0]}	:
+													{v2M[15:0], 16'b0}		;
+		end
+		else if(`SW_M) begin
+			wByteEnDmM 	= 4'b1111;
+			wDataDmM	= v2M;
+		end
+		else begin
+			wByteEnDmM	= 4'b0000;
+			wDataDmM	= v2M;
+		end
 	end
 
 	assign  m_data_addr     = aDmM;
@@ -551,17 +561,17 @@ module mips(
 	logic   [31:0]  vM;
 	always@(*) begin
 		if(`LB_M)
-			vM	= aDmM[1:0] == 	2'b00 ? {{16{m_data_rdata[7]}} , m_data_rdata[7:0]}   : 
-								2'b01 ? {{16{m_data_rdata[15]}}, m_data_rdata[15:8]}  : 
-								2'b10 ? {{16{m_data_rdata[23]}}, m_data_rdata[23:16]} : 
-										{{16{m_data_rdata[31]}}, m_data_rdata[31:24]} ;
+			vM	= 	aDmM[1:0] 	== 	2'b00 	? 	{{24{m_data_rdata[7]}} , m_data_rdata[7:0]}   : 
+					aDmM[1:0] 	== 	2'b01 	? 	{{24{m_data_rdata[15]}}, m_data_rdata[15:8]}  : 
+					aDmM[1:0] 	== 	2'b10 	? 	{{24{m_data_rdata[23]}}, m_data_rdata[23:16]} : 
+												{{24{m_data_rdata[31]}}, m_data_rdata[31:24]} ;
 		else if(`LH_M)
-			vM	= aDmM[1]	==	1'b0  ? {{8{m_data_rdata[15]}} , m_data_addr[15:0]}   :
-										{{8{m_data_rdata[31]}} , m_data_addr[31:16]}  ;
-		else if(`LB_M)
-			vM	= m_data_addr;
+			vM	= 	aDmM[1]		==	1'b0	? 	{{16{m_data_rdata[15]}}, m_data_rdata[15:0]}  :
+												{{16{m_data_rdata[31]}}, m_data_rdata[31:16]} ;
+		else if(`LW_M)
+			vM	= 	m_data_rdata;
 		else
-			vM	= vE2M;
+			vM	= 	vE2M;
 	end
 
 	logic   [31:0]  vNewM;
@@ -611,12 +621,12 @@ module mips(
 	logic   [31:0]  wDataGrfW;
 	logic           wEnGrfW; */
 	always@(*) begin
-		if(`ADD_W || `SUB_W || `AND_W || `OR_W || `SLT_W || `MFHI_W || `MFLO_W) begin
+		if(`ADD_W || `SUB_W || `AND_W || `OR_W || `SLT_W || `SLTU_W || `MFHI_W || `MFLO_W) begin
 			aGrfW      = instrM2W[`A3];
 			wDataGrfW  = vM2W;
 			wEnGrfW    = 1'b1;
 		end
-		else if(`ORI_W || `LB_W || `LH_W || `LW_W || `LUI_W || `SLTI_W || `ADDI_W || `ANDI_W) begin
+		else if(`ORI_W || `LB_W || `LH_W || `LW_W || `LUI_W || `ADDI_W || `ANDI_W) begin
 			aGrfW      = instrM2W[`A2];
 			wDataGrfW  = vM2W;
 			wEnGrfW    = 1'b1;
