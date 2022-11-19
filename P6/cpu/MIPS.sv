@@ -113,7 +113,6 @@ module mips(
 		a1Stall =	a1StallD2E |	a1StallE2M 	|	a1StallM2W;
 		a2Stall = 	a2StallD2E |	a2StallE2M 	| 	a2StallM2W;
 		Stall   = 	a1Stall    | 	a2Stall		|	mdStall;
-
 		// mdStall move to E
 	end
 	
@@ -436,7 +435,7 @@ module mips(
 	.v1(v1MdE), .v2(v2MdE), .opt(optMdE), .start(startMdE),
 	.busy(busyMdE), .hi(hiMdE), .lo(loMdE));
 
-	assign mdStall = (`MULT_D || `MULTU_D || `DIV_D || `DIVU_D || `MFHI_D || `MFLO_D || `MTHI_D || `MTLO_D) && (busyMdE || startMdE);
+	assign mdStall = (`MFHI_D || `MFLO_D || `MTHI_D || `MTLO_D) && (busyMdE || startMdE);
 
 	logic   [31:0]  resAluE;
 	ALU ALU_0(.v1(v1AluE), .v2(v2AluE), .imm16(imm16AluE), .opt(optAluE),
