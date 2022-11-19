@@ -150,3 +150,59 @@
 `define SW_E        (instrD2E[`OPTION1] == `SW)
 `define SW_M        (instrE2M[`OPTION1] == `SW)
 `define SW_W        (instrM2W[`OPTION1] == `SW)
+
+`define MULT		(6'b011000)    // special
+`define MULT_F		((instrF[`OPTION1]   == `SPECIAL) && (instrF[`OPTION2]   == `MULT))     
+`define MULT_D		((instrF2D[`OPTION1] == `SPECIAL) && (instrF2D[`OPTION2] == `MULT))
+`define MULT_E		((instrD2E[`OPTION1] == `SPECIAL) && (instrD2E[`OPTION2] == `MULT))
+`define MULT_M		((instrE2M[`OPTION1] == `SPECIAL) && (instrE2M[`OPTION2] == `MULT))
+`define MULT_W		((instrM2W[`OPTION1] == `SPECIAL) && (instrM2W[`OPTION2] == `MULT))
+
+`define MULTU		(6'b011001)    // special
+`define MULTU_F		((instrF[`OPTION1]   == `SPECIAL) && (instrF[`OPTION2]   == `MULTU))     
+`define MULTU_D		((instrF2D[`OPTION1] == `SPECIAL) && (instrF2D[`OPTION2] == `MULTU))
+`define MULTU_E		((instrD2E[`OPTION1] == `SPECIAL) && (instrD2E[`OPTION2] == `MULTU))
+`define MULTU_M		((instrE2M[`OPTION1] == `SPECIAL) && (instrE2M[`OPTION2] == `MULTU))
+`define MULTU_W		((instrM2W[`OPTION1] == `SPECIAL) && (instrM2W[`OPTION2] == `MULTU))
+
+`define DIV		    (6'b011010)    // special
+`define DIV_F		((instrF[`OPTION1]   == `SPECIAL) && (instrF[`OPTION2]   == `DIV))     
+`define DIV_D		((instrF2D[`OPTION1] == `SPECIAL) && (instrF2D[`OPTION2] == `DIV))
+`define DIV_E		((instrD2E[`OPTION1] == `SPECIAL) && (instrD2E[`OPTION2] == `DIV))
+`define DIV_M		((instrE2M[`OPTION1] == `SPECIAL) && (instrE2M[`OPTION2] == `DIV))
+`define DIV_W		((instrM2W[`OPTION1] == `SPECIAL) && (instrM2W[`OPTION2] == `DIV))
+
+`define DIVU		(6'b011011)    // special
+`define DIVU_F		((instrF[`OPTION1]   == `SPECIAL) && (instrF[`OPTION2]   == `DIVU))     
+`define DIVU_D		((instrF2D[`OPTION1] == `SPECIAL) && (instrF2D[`OPTION2] == `DIVU))
+`define DIVU_E		((instrD2E[`OPTION1] == `SPECIAL) && (instrD2E[`OPTION2] == `DIVU))
+`define DIVU_M		((instrE2M[`OPTION1] == `SPECIAL) && (instrE2M[`OPTION2] == `DIVU))
+`define DIVU_W		((instrM2W[`OPTION1] == `SPECIAL) && (instrM2W[`OPTION2] == `DIVU))
+
+`define MFHI		(6'b010000)    // special
+`define MFHI_F		((instrF[`OPTION1]   == `SPECIAL) && (instrF[`OPTION2]   == `MFHI))     
+`define MFHI_D		((instrF2D[`OPTION1] == `SPECIAL) && (instrF2D[`OPTION2] == `MFHI))
+`define MFHI_E		((instrD2E[`OPTION1] == `SPECIAL) && (instrD2E[`OPTION2] == `MFHI))
+`define MFHI_M		((instrE2M[`OPTION1] == `SPECIAL) && (instrE2M[`OPTION2] == `MFHI))
+`define MFHI_W		((instrM2W[`OPTION1] == `SPECIAL) && (instrM2W[`OPTION2] == `MFHI))
+
+`define MFLO		(6'b010010)    // special
+`define MFLO_F		((instrF[`OPTION1]   == `SPECIAL) && (instrF[`OPTION2]   == `MFLO))     
+`define MFLO_D		((instrF2D[`OPTION1] == `SPECIAL) && (instrF2D[`OPTION2] == `MFLO))
+`define MFLO_E		((instrD2E[`OPTION1] == `SPECIAL) && (instrD2E[`OPTION2] == `MFLO))
+`define MFLO_M		((instrE2M[`OPTION1] == `SPECIAL) && (instrE2M[`OPTION2] == `MFLO))
+`define MFLO_W		((instrM2W[`OPTION1] == `SPECIAL) && (instrM2W[`OPTION2] == `MFLO))
+
+`define MTHI		(6'b010001)    // special
+`define MTHI_F		((instrF[`OPTION1]   == `SPECIAL) && (instrF[`OPTION2]   == `MTHI))     
+`define MTHI_D		((instrF2D[`OPTION1] == `SPECIAL) && (instrF2D[`OPTION2] == `MTHI))
+`define MTHI_E		((instrD2E[`OPTION1] == `SPECIAL) && (instrD2E[`OPTION2] == `MTHI))
+`define MTHI_M		((instrE2M[`OPTION1] == `SPECIAL) && (instrE2M[`OPTION2] == `MTHI))
+`define MTHI_W		((instrM2W[`OPTION1] == `SPECIAL) && (instrM2W[`OPTION2] == `MTHI))
+
+`define MTLO		(6'b010011)    // special
+`define MTLO_F		((instrF[`OPTION1]   == `SPECIAL) && (instrF[`OPTION2]   == `MTLO))     
+`define MTLO_D		((instrF2D[`OPTION1] == `SPECIAL) && (instrF2D[`OPTION2] == `MTLO))
+`define MTLO_E		((instrD2E[`OPTION1] == `SPECIAL) && (instrD2E[`OPTION2] == `MTLO))
+`define MTLO_M		((instrE2M[`OPTION1] == `SPECIAL) && (instrE2M[`OPTION2] == `MTLO))
+`define MTLO_W		((instrM2W[`OPTION1] == `SPECIAL) && (instrM2W[`OPTION2] == `MTLO))

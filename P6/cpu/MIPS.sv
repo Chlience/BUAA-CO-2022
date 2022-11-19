@@ -50,7 +50,7 @@ module mips(
 	logic   [31:0]  vNewD2E, vNewE2M, vNewM2W;
 	
 	logic   Stall;
-	logic   a1Stall, a2Stall;
+	logic   a1Stall, a2Stall, mdStall;
 	logic   a1StallD2E, a2StallD2E;
 	logic   a1StallE2M, a2StallE2M;
 	logic   a1StallM2W, a2StallM2W;
@@ -110,9 +110,14 @@ module mips(
 			a2StallD2E = 1'd0;
 			a2StallM2W = 1'd0;
 		end
-		a1Stall = a1StallD2E | a1StallE2M | a1StallM2W;
-		a2Stall = a2StallD2E | a2StallE2M | a2StallM2W;
-		Stall   = a1Stall    | a2Stall;
+		if(`MULT_D || `MULTU_D || `DIV_D || `DIVU_D || `MFHI_D || `MFLO_D || `MTHI_D || `MTLO_D) begin
+			mdStall = startMdE || busyMdE;
+		end
+		else
+			mdStall = 1'd0;
+		a1Stall =	a1StallD2E |	a1StallE2M 	|	a1StallM2W;
+		a2Stall = 	a2StallD2E |	a2StallE2M 	| 	a2StallM2W;
+		Stall   = 	a1Stall    | 	a2Stall		|	mdStall;
 	end
 	
 	// Fetch (F)
@@ -150,15 +155,14 @@ module mips(
 	
 	// Decode (D)
 	// Decode (D)
-	
 	always@(*) begin // aUse, tUse
-		if(`ADD_D || `SUB_D || `AND_D || `OR_D || `SLT_D) begin
+		if(`ADD_D || `SUB_D || `AND_D || `OR_D || `SLT_D || `MULT_D || `MULTU_D || `DIV_D || `DIVU_D) begin
 			a1Use   = instrF2D[`A1];
 			t1Use   = 2'd1;
 			a2Use   = instrF2D[`A2];
 			t2Use   = 2'd1;
 		end
-		else if(`LB_D || `LH_D || `LW_D || `SLTI_D) begin
+		else if(`LB_D || `LH_D || `LW_D || `SLTI_D || `MTHI_D || `MTLO_D) begin
 			a1Use   = instrF2D[`A1];
 			t1Use   = 2'd1;
 			a2Use   = 5'd0;
@@ -279,7 +283,7 @@ module mips(
 	logic   [1:0]   tNewD;
 	logic   [31:0]  vNewD;
 	always@(*) begin // aNew, tNew, vNew
-		if(`ADD_D || `SUB_D || `AND_D || `OR_D || `SLT_D) begin
+		if(`ADD_D || `SUB_D || `AND_D || `OR_D || `SLT_D || `MFHI_D || `MFLO_D) begin
 			aNewD   = instrF2D[`A3];
 			tNewD   = 2'd1;
 			vNewD   = 32'd0;
@@ -413,12 +417,55 @@ module mips(
 			optAluE	= 4'd0;
 	end
 	
+	logic	[31:0]	v1MdE;
+	logic	[31:0]	v2MdE;
+	assign 	v1MdE	= v1E;
+	assign	v2MdE	= v2E;
+	logic	[2:0]	optMdE;
+	logic			startMdE;
+	always@(*) begin
+		optMdE		= 	`MULT_E		?	3'b000 :
+						`MULTU_E	?	3'b001 :
+						`DIV_E		?	3'b010 :
+						`DIVU_E		?	3'b011 :
+						`MTHI_E		?   3'b100 :
+										3'b101 ;
+		startMdE	=	`MULT_E || `MULTU_E || `DIV_E || `DIVU_E || `MTHI_E || `MTLO_E;
+	end
+	logic			busyMdE;
+	logic	[31:0]	hiMdE;
+	logic	[31:0]	loMdE;
+	MD MD_0(.clk(clk), .reset(reset),
+	.v1(v1MdE), .v2(v2MdE), .opt(optMdE), .start(startMdE),
+	.busy(busyMdE), .hi(hiMdE), .lo(loMdE));
+
 	logic   [31:0]  resAluE;
 	ALU ALU_0(.v1(v1AluE), .v2(v2AluE), .imm16(imm16AluE), .opt(optAluE),
 	.res(resAluE)/*, .overf()*/);
 	
+	logic 	[31:0] 	vE;
+	always@(*) begin
+		if(`ADD_E || `SUB_E || `AND_E || `OR_E || `ORI_E || `SLT_E || `SLTI_E || `ADDI_E || `ANDI_E)
+			vE = resAluE;
+		else if(`MFHI_E)
+			vE = hiMdE;
+		else if(`MFLO_E)
+			vE = loMdE;
+		else
+			vE = resAluE;
+	end
+
 	logic   [31:0]  vNewE;
-	assign  vNewE  = (`ADD_E || `SUB_E || `AND_E || `OR_E || `ORI_E || `SLT_E || `SLTI_E || `ADDI_E || `ANDI_E) ? resAluE : vNewD2E;
+	always@(*) begin
+		if(`ADD_E || `SUB_E || `AND_E || `OR_E || `ORI_E || `SLT_E || `SLTI_E || `ADDI_E || `ANDI_E)
+			vNewE = resAluE;
+		else if(`MFHI_E)
+			vNewE = hiMdE;
+		else if(`MFLO_E)
+			vNewE = loMdE;
+		else
+			vNewE = vNewD2E;
+	end
 	
 	// Execute to Memory (E2M)
 	// Execute to Memory (E2M)
@@ -456,7 +503,7 @@ module mips(
 		end
 		else begin
 			v2E2M <= v2E;
-			vE2M  <= resAluE;
+			vE2M  <= vE;
 		end
 	end
 	
@@ -564,7 +611,7 @@ module mips(
 	logic   [31:0]  wDataGrfW;
 	logic           wEnGrfW; */
 	always@(*) begin
-		if(`ADD_W || `SUB_W || `AND_W || `OR_W || `SLT_W) begin
+		if(`ADD_W || `SUB_W || `AND_W || `OR_W || `SLT_W || `MFHI_W || `MFLO_W) begin
 			aGrfW      = instrM2W[`A3];
 			wDataGrfW  = vM2W;
 			wEnGrfW    = 1'b1;
