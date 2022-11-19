@@ -1,7 +1,7 @@
 # P6 支持更多指令的流水线 CPU
 
 ## 结构
-![cpu.drawio.svg](https://raw.githubusercontent.com/Chlience/BUAA-CO/main/P6/cpu.drawio.svg)
+![cpu.drawio.svg](https://github.com/Chlience/BUAA-CO/blob/main/P6/cpu.drawio.svg)
 
 ## 设计思路
 

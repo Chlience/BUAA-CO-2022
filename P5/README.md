@@ -1,7 +1,7 @@
 # P5 流水线 CPU
 
 ## 结构
-![cpu.drawio.svg](https://raw.githubusercontent.com/Chlience/BUAA-CO/main/P5/cpu.drawio.svg)
+![cpu.drawio.svg](https://github.com/Chlience/BUAA-CO/blob/main/P5/cpu.drawio.svg)
 
 ## 设计思路
 
