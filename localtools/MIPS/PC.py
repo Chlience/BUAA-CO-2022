@@ -16,17 +16,19 @@ class PC:
     @classmethod
     def loadInstruct(cls,ins) :
         if type(ins) is str:
+            ins = ins.strip()
             if ins == "":
                 pass
             else :
-                cls.__order [cls.__imend] = DisAssembler.decode(RegOrder(ins)) if ins.isalnum() else ins
+                cls.__order [cls.__imend] = DisAssembler.decode(RegOrder(ins)) if ins.replace(" ","").isalnum() else ins
                 cls.__imend += 1
         elif type(ins) is list:
             for oneins in ins:
+                oneins = oneins.strip()
                 if oneins == "":
                     continue
                 if type(oneins) is str:
-                    cls.__order[cls.__imend] = DisAssembler.decode(RegOrder(oneins)) if oneins.isalnum() else oneins
+                    cls.__order[cls.__imend] = DisAssembler.decode(RegOrder(oneins)) if oneins.replace(" ","").isalnum() else oneins
                     cls.__imend += 1
                 else:
                     raise SystemError("only str can be load in IM")
