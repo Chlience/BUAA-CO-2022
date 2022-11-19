@@ -58,10 +58,10 @@ def fullRam(reg, ram):
     instrList += [sw(reg, ram, 0)]
     return instrList
 
-def fullRams(reg, rams):
+def fullRams(regs, rams):
     instrList = []
     for ram in rams:
-        instrList += fullRam(reg, ram)
+        instrList += fullRam(randReg(regs), ram)
     return instrList
 
 def clearRams(rams):
@@ -103,6 +103,7 @@ def randBranchDelayInstr(regs):
 def testALU(regs):
     # add, sub, ori, lui
     instrList = []
+    instrList += fullRegs(regs)
     testTimes = 20
     for _ in range(testTimes):
         opt = random.randint(0, 3)
@@ -119,6 +120,8 @@ def testALU(regs):
 def testSaveAndLoad(regs, rams):
     # sw, lw
     instrList = []
+    instrList += fullRegs(regs)
+    instrList += fullRams(regs, rams)
     testTimes = 20
     for _ in range(testTimes):
         opt = random.randint(0, 1)
@@ -144,6 +147,7 @@ def testBranch(regs):
             instrList += [add(reg1, reg1, reg1)]
             instrList += [add(reg1, reg1, reg1)]
             instrList += [add(reg1, reg1, reg1)]
+            instrList += [add(reg1, reg1, reg1)]
         else:
             reg1 = randReg(regs)
             reg2 = randReg(regs)
@@ -155,6 +159,43 @@ def testBranch(regs):
             instrList += [add(reg1, reg1, reg1)]
             instrList += [add(reg1, reg1, reg1)]
             instrList += [add(reg1, reg1, reg1)]
+            instrList += [add(reg1, reg1, reg1)]
+    return instrList
+
+def testJal(regs, offsetBefore):
+    instrList = []
+    reg  = randReg(regs)
+    reg1 = randReg(regs)
+    offsetnow = offsetBefore + len(instrList) + 1
+    offset = offsetnow + random.randint(1, 5)
+    instrList += [jal(0x3000 // 4 + offset)]
+    instrList += randBranchDelayInstr(regs)
+    instrList += [ori(reg1, 0, 1)]
+    instrList += [add(reg1, reg1, reg1)]
+    instrList += [add(reg1, reg1, reg1)]
+    instrList += [add(reg1, reg1, reg1)]
+    instrList += [add(reg1, reg1, reg1)]
+    instrList += [add(reg1, reg1, reg1)]
+    return instrList
+
+def testJr(regs, offsetBefore, reg=-1):
+    instrList = []
+    if(reg == - 1):
+        reg  = randReg(regs)
+        offsetnow = offsetBefore + len(instrList) + 1 + 2
+        offset = offsetnow + random.randint(1, 5)
+        pc = 0x3000 + (offset >> 2)
+        instrList += [lui(reg, pc >> 16)]
+        instrList += [ori(reg, 0, pc % (1 << 16))]
+    reg1 = randReg(regs)
+    instrList += [jr(reg)]
+    instrList += randBranchDelayInstr(regs)
+    instrList += [ori(reg1, 0, 1)]
+    instrList += [add(reg1, reg1, reg1)]
+    instrList += [add(reg1, reg1, reg1)]
+    instrList += [add(reg1, reg1, reg1)]
+    instrList += [add(reg1, reg1, reg1)]
+    instrList += [add(reg1, reg1, reg1)]
     return instrList
 
 def testJump(regs, offsetBefore):
@@ -163,30 +204,101 @@ def testJump(regs, offsetBefore):
     testTimes = 20
     for _ in range(testTimes):
         opt = random.randint(0, 1)
-        # if(opt == 0):
-        reg1 = randReg(regs)
-        offsetnow = offsetBefore + len(instrList) + 1
-        offset = offsetnow + random.randint(1, 5)
-        instrList += [jal(0x3000 // 4 + offset)]
-        instrList += randBranchDelayInstr(regs)
-        instrList += [ori(reg1, 0, 1)]
-        instrList += [add(reg1, reg1, reg1)]
-        instrList += [add(reg1, reg1, reg1)]
-        instrList += [add(reg1, reg1, reg1)]
-        instrList += [add(reg1, reg1, reg1)]
+        if(opt == 0):
+            instrList += testJal(regs, offsetBefore + len(instrList))
+        else:
+            instrList += testJr(regs, offsetBefore + len(instrList))
     return instrList
 
-def testForward(regs):
+def instrNew0(regs, rams, offsetBefore, reg):
+    # lui, jal
+    instrList = []
+    opt = random.randint(0, 2)
+    if(opt == 0):
+        instrList += [lui(reg, randImm16())]
+    else:
+        offset = offsetBefore + len(instrList) + 1 + 1
+        instrList += [jal(0x3000 // 4 + offset)]
+    return instrList
+
+def instrNew1(regs, rams, offsetBefore, reg):
+    instrList = []
+    opt = random.randint(0, 3)
+    if(opt == 0):
+        instrList += [add(reg, randReg(regs), randReg(regs))]
+    elif(opt == 1):
+        instrList += [sub(reg, randReg(regs), randReg(regs))]
+    else:
+        instrList += [ori(reg, randReg(regs), randImm16())]
+    return instrList
+
+def instrNew2(regs, rams, offsetBefore, reg):
+    # lw
+    instrList = []
+    instrList += [lw(reg, randRam(rams), 0)]
+    return instrList
+
+def testForward(regs, rams, offsetBefore):
     instrList = []
     # tUse = 0: beq, jr
     # tUse = 1: add, sub, lw, sw
     # tUse = 2: sw
     # noUse   : ori, lui
+    testTimes = 5
+    for _ in range(testTimes):
+        reg = 31
+        instrList += instrNew0(regs, rams, offsetBefore + len(instrList), 31)
+        instrList += [sw(31, randRam(rams), 0)]
+        instrList += instrNew1(regs, rams, offsetBefore + len(instrList), 31)
+        instrList += [sw(31, randRam(rams), 0)]
+        instrList += instrNew2(regs, rams, offsetBefore + len(instrList), 31)
+        instrList += [sw(31, randRam(rams), 0)]
 
-    # tNew = 0: lui, jal
-    # tNew = 1: add, sub, ori
-    # tNew = 2: lw
-    # noNew   : beq, jr
+        instrList += instrNew0(regs, rams, offsetBefore + len(instrList), 31)
+        instrList += [add(randReg(regs), reg, randReg(regs))]
+        instrList += instrNew1(regs, rams, offsetBefore + len(instrList), 31)
+        instrList += [add(randReg(regs), reg, randReg(regs))]
+        instrList += instrNew2(regs, rams, offsetBefore + len(instrList), 31)
+        instrList += [add(randReg(regs), reg, randReg(regs))]
+        
+        instrList += instrNew0(regs, rams, offsetBefore + len(instrList), 31)
+        instrList += [add(randReg(regs), randReg(regs), reg)]
+        instrList += instrNew1(regs, rams, offsetBefore + len(instrList), 31)
+        instrList += [add(randReg(regs), randReg(regs), reg)]
+        instrList += instrNew2(regs, rams, offsetBefore + len(instrList), 31)
+        instrList += [add(randReg(regs), randReg(regs), reg)]
+
+        instrList += instrNew0(regs, rams, offsetBefore + len(instrList), 31)
+        instrList += [sub(randReg(regs), reg, randReg(regs))]
+        instrList += instrNew1(regs, rams, offsetBefore + len(instrList), 31)
+        instrList += [sub(randReg(regs), reg, randReg(regs))]
+        instrList += instrNew2(regs, rams, offsetBefore + len(instrList), 31)
+        instrList += [sub(randReg(regs), reg, randReg(regs))]
+        
+        instrList += instrNew0(regs, rams, offsetBefore + len(instrList), 31)
+        instrList += [sub(randReg(regs), randReg(regs), reg)]
+        instrList += instrNew1(regs, rams, offsetBefore + len(instrList), 31)
+        instrList += [sub(randReg(regs), randReg(regs), reg)]
+        instrList += instrNew2(regs, rams, offsetBefore + len(instrList), 31)
+        instrList += [sub(randReg(regs), randReg(regs), reg)]
+        
+        instrList += instrNew0(regs, rams, offsetBefore + len(instrList), 31)
+        instrList += [ori(randReg(regs), reg, randImm16())]
+        instrList += instrNew1(regs, rams, offsetBefore + len(instrList), 31)
+        instrList += [ori(randReg(regs), reg, randImm16())]
+        instrList += instrNew2(regs, rams, offsetBefore + len(instrList), 31)
+        instrList += [ori(randReg(regs), reg, randImm16())]
+
+        instrList += instrNew0(regs, rams, offsetBefore + len(instrList), 31)
+        instrList += [sw(reg, randRam(rams), 0)]
+        instrList += instrNew1(regs, rams, offsetBefore + len(instrList), 31)
+        instrList += [sw(reg, randRam(rams), 0)]
+        instrList += instrNew2(regs, rams, offsetBefore + len(instrList), 31)
+        instrList += [sw(reg, randRam(rams), 0)]
+
+    # 计算地址的几个冲突没测 beq, jr, lw(addr), sw(addr)
+    # 欢迎补充
+
     return instrList
 
 def makeCode():
@@ -194,21 +306,18 @@ def makeCode():
     regs = list(range(8, 28))
     rams = [4 * addr for addr in range(16)]
     
-    instrList += fullRegs(regs)
     instrList += testALU(regs)
-    instrList += clearRegs(regs)
     
     instrList += fullRegs(regs)
-    instrList += fullRams(8, rams)
+    instrList += fullRams(regs, rams)
     instrList += testSaveAndLoad(regs, rams)
-    instrList += clearRegs(regs)
-    instrList += clearRams(rams)
      
     instrList += fullRegs(regs)
     instrList += testBranch(regs)
     instrList += clearRams(rams)
 
     instrList += testJump(regs, len(instrList))
+    instrList += testForward(regs, rams, len(instrList))
 
     return instrList
 
