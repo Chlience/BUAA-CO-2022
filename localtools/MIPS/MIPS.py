@@ -13,7 +13,7 @@ if __name__ == '__main__':
     sys.argv.count
     stop = False
     if(len(sys.argv)==3) :
-        maxpathnum = sys.argv[2]
+        maxpathnum = int(sys.argv[2])
         stop = True
     code = readFile(codePath)
     PC.loadInstruct(code)
