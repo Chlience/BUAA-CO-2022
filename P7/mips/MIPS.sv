@@ -45,16 +45,26 @@ module mips(
 	wire IRQ0, IRQ1;
 	wire TC0EN, TC1EN;
 
+	logic	[31:0]  m_data_rdata_cpu;
+	logic	[31:0]  m_data_addr_cpu;
+	logic	[31:0]  m_data_wdata_cpu;
+	logic	[3:0]   m_data_byteen_cpu;
+
 	TC TC0(
 	   .clk(clk), .reset(reset),
 	   .Addr(TC0Addr), .WE(TC0EN), .Din(TC0WD), .Dout(TC0RD), .IRQ(IRQ0));
 	TC TC1(
 	   .clk(clk), .reset(reset),
 	   .Addr(TC1Addr), .WE(TC1EN), .Din(TC1WD), .Dout(TC1RD), .IRQ(IRQ1));
-
 	CPU CPU_0(.clk(clk), .reset(reset),
 		.i_inst_rdata(i_inst_rdata), .i_inst_addr(i_inst_addr),
-		.m_data_rdata(m_data_rdata), .m_data_addr(m_data_addr), .m_data_wdata(m_data_wdata), .m_data_byteen(m_data_byteen), .m_inst_addr(m_inst_addr),
+		.m_data_rdata(m_data_rdata_cpu), .m_data_addr(m_data_addr_cpu), .m_data_wdata(m_data_wdata_cpu), .m_data_byteen(m_data_byteen_cpu), .m_inst_addr(m_inst_addr),
 		.w_grf_we(w_grf_we), .w_grf_addr(w_grf_addr), .w_grf_wdata(w_grf_wdata), .w_inst_addr(w_inst_addr),
 		.HWInt({3'b0, interrupt, IRQ1, IRQ0}), .macroscopic_pc(macroscopic_pc));
+	BRIDGE BRIDGE_0(
+		.a(m_data_addr_cpu), .v(m_data_rdata_cpu), .wData(m_data_wdata_cpu), .wByteEn(m_data_byteen_cpu),
+		.aDm(m_data_addr), .vDm(m_data_rdata), .wDataDm(m_data_wdata), .wByteEnDm(m_data_byteen),
+		.aDev0(TC0Addr), .vDev0(TC0RD), .wDataDev0(TC0WD), .wEnDev0(TC0EN),
+		.aDev1(TC1Addr), .vDev1(TC1RD), .wDataDev1(TC1WD), .wEnDev1(TC1EN),
+		.m_int_addr(m_int_addr), .m_int_byteen(m_int_byteen));
 endmodule

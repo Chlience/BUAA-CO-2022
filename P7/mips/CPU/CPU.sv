@@ -42,6 +42,90 @@ module CPU(
 	input	[5:0]	HWInt,
 	output	[31:0]	macroscopic_pc
 	);
+
+
+	
+    logic	[31:0]	pcF;		// F
+    logic	[31:0]	instrF;
+    logic   [31:0]  npc;
+    logic   		npcEn;
+
+    logic   [31:0]  pcF2D;		// F2D
+    logic   [31:0]  instrF2D;
+    logic			BD_F2D;
+
+    logic   [31:0]  jpcD;		// D
+    logic           jpcEnD;
+    logic   [4:0]   a1GrfD;
+    logic   [4:0]   a2GrfD;
+    logic   [31:0]  v1GrfD;
+    logic   [31:0]  v2GrfD;
+    logic   [4:0]   a1D, a2D;
+    logic   [31:0]  v1D, v2D;
+    logic   [4:0]   aNewD;
+    logic   [1:0]   tNewD;
+    logic   [31:0]  vNewD;
+
+    logic   [31:0]  pcD2E;		// D2E
+    logic   [31:0]  instrD2E;
+    logic   [31:0]  v1D2E;
+    logic   [31:0]  v2D2E;
+    logic			BD_D2E;
+    
+    logic   [4:0]   a1E, a2E;	// E
+    logic   [31:0]  v1E, v2E;
+    logic   [31:0]  v1AluE;
+    logic   [31:0]  v2AluE;
+    logic   [15:0]  imm16AluE;
+    logic   [3:0]   optAluE;
+    logic	[31:0]	v1MdE;
+    logic	[31:0]	v2MdE;
+    logic	[2:0]	optMdE;
+    logic			startMdE;
+    logic			busyMdE;
+    logic	[31:0]	hiMdE;
+    logic	[31:0]	loMdE;
+    logic   [31:0]  resAluE;
+    logic   		ovAluE;
+    logic 	[31:0] 	vE;
+    logic   [31:0]  vNewE;
+
+    logic   [31:0]  pcE2M;		// E2M
+    logic   [31:0]  instrE2M;
+    logic   [31:0]  v2E2M;
+    logic   [31:0]  vE2M;
+    logic			BD_E2M;
+
+    logic   [4:0]   a2M;		// M
+    logic   [31:0]  v2M;
+    logic   [31:0]  aDmM;
+    logic   [31:0]  wDataDmM;
+    logic   [3:0]   wByteEnDmM;
+
+    logic	[4:0]	aCP0M;
+    logic	[31:0]	wDataCP0M;
+    logic			wEnCP0M;
+    logic	[31:0]	vCP0M;
+    logic	[31:0]	vpc;
+    logic			BD;
+    logic	[4:0]	ExcCodeM;
+    logic			EXLClr;
+    logic	[31:0]	epcM;
+	logic	[31:0]	epcEnM;
+    logic			req;
+
+    logic   [31:0]  vM;
+    logic   [31:0]  vNewM;
+
+    logic   [31:0]  pcM2W;		// M2W
+    logic   [31:0]  instrM2W;
+    logic   [31:0]  vM2W;
+
+    logic   [4:0]   aGrfW;		// W
+    logic   [31:0]  wDataGrfW;
+    logic           wEnGrfW;
+
+	// Exception
 	// Exception
 
 	logic			AdEL_F, AdEL_D, AdEL_E;
@@ -121,28 +205,20 @@ module CPU(
 			a2StallD2E = 1'd0;
 			a2StallM2W = 1'd0;
 		end
+		mdStall =	(`MFHI_D || `MFLO_D || `MTHI_D || `MTLO_D) && (busyMdE || startMdE);
 		a1Stall =	a1StallD2E |	a1StallE2M 	|	a1StallM2W;
 		a2Stall = 	a2StallD2E |	a2StallE2M 	| 	a2StallM2W;
 		Stall   = 	a1Stall    | 	a2Stall		|	mdStall;
-		// mdStall move to E
 	end
 	
 	// Fetch (F)
 	// Fetch (F)
 	
-	logic   [31:0]  pcF;
-	logic   [31:0]  npcF;
-	logic   [31:0]  instrF;
-	logic   npcEnF;
-	assign  npcEnF  = ~ Stall;
-
-	logic   [31:0]  jpcD;
-	logic           jpcEnD;
-	
-	PC  PC_0(.clk(clk), .reset(reset), .pc(pcF), .npc(npcF), .npcEn(npcEnF));
+	assign  npcEn  = ~ Stall;
+	PC  PC_0(.clk(clk), .reset(reset), .pc(pcF), .npc(npc), .npcEn(npcEn));
 	assign  instrF      = i_inst_rdata;
 	assign  i_inst_addr = pcF;
-	NPC NPC_0(.pc(pcF), .jpc(jpcD), .jpcEn(jpcEnD), .npc(npcF));
+	NPC NPC_0(.pc(pcF), .jpc(jpcD), .jpcEn(jpcEnD), .epc(epcM), .epcEn(epcEnM), .req(req), .npc(npc));
 
 	assign	AdEL_F		= (pcF[1:0] != 2'b00) || (pcF < 32'h00003000) || (pcF >= 32'h00007000);
 	assign	AdES_F		= 0;
@@ -152,17 +228,12 @@ module CPU(
 
 	// Fetch to Decode (F2D)
 	// Fetch to Decode (F2D)
-	logic	BD_F2D;
-	always@(posedge clk) begin
-		if(reset)
-			BD_F2D		<=	5'd0;
-		else
-			BD_F2D		<=	(`BEQ_D || `BNE_D || `JAL_D || `JR_D);	// 是否为延迟槽指令
-	end
 
 	always@(posedge clk) begin
-		if(reset)
+		if(reset || req) begin
 			ExcCodeF2D	<=	5'd0;
+			BD_F2D		<=	5'd0;
+		end
 		else begin
 			if(AdEL_F)			ExcCodeF2D 	<=	`AdEL;
 			else if(AdES_F)		ExcCodeF2D	<=	`AdES;
@@ -170,13 +241,12 @@ module CPU(
 			else if(RI_F)		ExcCodeF2D	<=	`RI;
 			else if(OV_F)		ExcCodeF2D	<=	`OV;
 			else				ExcCodeF2D	<=	5'd0;
+			BD_F2D <= (`BEQ_D || `BNE_D || `JAL_D || `JR_D);
 		end
 	end
 	
-	logic   [31:0]  pcF2D;
-	logic   [31:0]  instrF2D;
 	always@(posedge clk) begin // pc, instruction
-		if(reset) begin
+		if(reset || req || (`ERET_D || `ERET_E)) begin
 			pcF2D       <= 32'd0;
 			instrF2D    <= 32'd0;
 		end
@@ -240,20 +310,8 @@ module CPU(
 		end
 	end
 
-	logic   [4:0]   a1GrfD;
-	logic   [4:0]   a2GrfD;
 	assign  a1GrfD  = instrF2D[`A1];
 	assign  a2GrfD  = instrF2D[`A2];
-	
-	// W declare move here
-	logic   [4:0]   aGrfW;
-	logic   [31:0]  wDataGrfW;
-	logic           wEnGrfW;
-	logic   [31:0]  pcM2W;
-	
-	logic   [31:0]  v1GrfD;
-	logic   [31:0]  v2GrfD;
-
 	GRF GRF_0(.clk(clk), .reset(reset),
         .a1(a1GrfD), .a2(a2GrfD), .a3(aGrfW),
         .wData(wDataGrfW), .wEn(wEnGrfW),
@@ -263,8 +321,6 @@ module CPU(
 	assign  w_grf_wdata = wDataGrfW;
 	assign  w_inst_addr = pcM2W;
 	
-	logic   [4:0]   a1D, a2D;
-	logic   [31:0]  v1D, v2D;
 	assign  a1D     = instrF2D[`A1];
 	assign  a2D     = instrF2D[`A2];
 	always@(*) begin // trans: v1D, v2D
@@ -292,11 +348,7 @@ module CPU(
 		else v2D = v2GrfD;
 	end
 
-	/* Declare move to F
-	logic   [31:0]  jpcD;
-	logic           jpcEnD;
-	*/
-	always@(*) begin
+	always@(*) begin // JPC, JPCEn
 		if(`BEQ_D) begin
 			jpcD    = pcF + {{14{instrF2D[15]}}, instrF2D[`IMM16], 2'b00}; // following the branch
 			jpcEnD  = (v1D == v2D);
@@ -319,9 +371,6 @@ module CPU(
 		end
 	end
 
-	logic   [4:0]   aNewD;
-	logic   [1:0]   tNewD;
-	logic   [31:0]  vNewD;
 	always@(*) begin // aNew, tNew, vNew
 		if(`ADD_D || `SUB_D || `AND_D || `OR_D || `SLT_D || `SLTU_D || `MFHI_D || `MFLO_D) begin
 			aNewD   = instrF2D[`A3];
@@ -363,17 +412,15 @@ module CPU(
 
 	// Decode to Execute
 	// Decode to Execute
-	logic	BD_D2E;
-	always@(posedge clk) begin
-		if(reset)
-			BD_D2E		<=	5'd0;
-		else
-			BD_D2E		<=	BD_F2D;	// 是否为延迟槽指令
-	end
 
 	always@(posedge clk) begin
-		if(reset)
+		if(reset || req) begin
 			ExcCodeD2E	<=	5'd0;
+			BD_D2E		<=	5'd0;
+		end
+		else if(Stall) begin
+			ExcCodeD2E	<=	5'd0;
+		end
 		else begin
 			if(ExcCodeF2D)		ExcCodeD2E	<=	ExcCodeF2D;
 			else if(AdEL_D)		ExcCodeD2E 	<=	`AdEL;
@@ -382,14 +429,15 @@ module CPU(
 			else if(RI_D)		ExcCodeD2E	<=	`RI;
 			else if(OV_D)		ExcCodeD2E	<=	`OV;
 			else				ExcCodeD2E	<=	5'd0;
+			BD_D2E		<=	BD_F2D;
 		end
 	end
-	
-	logic   [31:0]  pcD2E;
-	logic   [31:0]  instrD2E;
 	always@(posedge clk) begin // pc, instruction
-		if(reset || Stall) begin
+		if(reset || req) begin
 			pcD2E       <= 32'd0;
+			instrD2E    <= 32'd0;
+		end
+		else if(Stall) begin
 			instrD2E    <= 32'd0;
 		end
 		else begin
@@ -398,7 +446,7 @@ module CPU(
 		end
 	end
 	always@(posedge clk) begin // aNew, tNew, vNew
-		if(reset || Stall) begin
+		if(reset || Stall || req) begin
 			aNewD2E     <= 5'd0;
 			tNewD2E     <= 2'd0;
 			vNewD2E     <= 32'd0;
@@ -409,10 +457,8 @@ module CPU(
 			vNewD2E     <= vNewD;
 		end
 	end
-	logic   [31:0]  v1D2E;
-	logic   [31:0]  v2D2E;
 	always@(posedge clk) begin // other register
-		if(reset || Stall) begin
+		if(reset || Stall || req) begin
 			v1D2E <= 32'd0;
 			v2D2E <= 32'd0;
 		end
@@ -425,8 +471,6 @@ module CPU(
 	// Execute (E)
 	// Execute (E)
 
-	logic   [4:0]   a1E, a2E;
-	logic   [31:0]  v1E, v2E;
 	assign  a1E     = instrD2E[`A1];
 	assign  a2E     = instrD2E[`A2];
 	always@(*) begin // trans
@@ -450,13 +494,9 @@ module CPU(
 		else v2E = v2D2E;
 	end
 	
-	logic   [31:0]  v1AluE;
-	logic   [31:0]  v2AluE;
-	logic   [15:0]  imm16AluE;
 	assign  v1AluE     = v1E;
 	assign  v2AluE     = v2E;
 	assign  imm16AluE  = instrD2E[`IMM16];
-	logic   [3:0]   optAluE;
 	always@(*) begin
 		if(`ADD_E)
 			optAluE	= 4'd0;
@@ -484,12 +524,8 @@ module CPU(
 			optAluE	= 4'd0;
 	end
 	
-	logic	[31:0]	v1MdE;
-	logic	[31:0]	v2MdE;
 	assign 	v1MdE	= v1E;
 	assign	v2MdE	= v2E;
-	logic	[2:0]	optMdE;
-	logic			startMdE;
 	always@(*) begin
 		optMdE	= 	`MULT_E		?	3'b000 :
 					`MULTU_E	?	3'b001 :
@@ -499,33 +535,20 @@ module CPU(
 									3'b101 ;
 		startMdE	=	`MULT_E || `MULTU_E || `DIV_E || `DIVU_E || `MTHI_E || `MTLO_E;
 	end
-	logic			busyMdE;
-	logic	[31:0]	hiMdE;
-	logic	[31:0]	loMdE;
 	MD MD_0(.clk(clk), .reset(reset),
         .v1(v1MdE), .v2(v2MdE), .opt(optMdE), .start(startMdE),
         .busy(busyMdE), .hi(hiMdE), .lo(loMdE));
-
-	assign mdStall = (`MFHI_D || `MFLO_D || `MTHI_D || `MTLO_D) && (busyMdE || startMdE);
-
-	logic   [31:0]  resAluE;
-	logic   		ovAluE;
 	ALU ALU_0(.v1(v1AluE), .v2(v2AluE), .imm16(imm16AluE), .opt(optAluE),
 	   .res(resAluE), .ov(ovAluE));
 	
-	logic 	[31:0] 	vE;
 	always@(*) begin
-		if(`ADD_E || `SUB_E || `AND_E || `OR_E || `ORI_E || `SLT_E || `SLTU_E || `ADDI_E || `ANDI_E)
-			vE = resAluE;
-		else if(`MFHI_E)
+		if(`MFHI_E)
 			vE = hiMdE;
 		else if(`MFLO_E)
 			vE = loMdE;
 		else
 			vE = resAluE;
 	end
-
-	logic   [31:0]  vNewE;
 	always@(*) begin
 		if(`ADD_E || `SUB_E || `AND_E || `OR_E || `ORI_E || `SLT_E || `SLTU_E || `ADDI_E || `ANDI_E)
 			vNewE = resAluE;
@@ -546,17 +569,11 @@ module CPU(
 	// Execute to Memory (E2M)
 	// Execute to Memory (E2M)
 
-	logic	BD_E2M;
 	always@(posedge clk) begin
-		if(reset)
-			BD_E2M		<=	5'd0;
-		else
-			BD_E2M		<=	BD_D2E;	// 是否为延迟槽指令
-	end
-
-	always@(posedge clk) begin
-		if(reset)
+		if(reset || req) begin
 			ExcCodeE2M	<=	5'd0;
+			BD_E2M		<=	5'd0;
+		end
 		else begin
 			if(ExcCodeD2E)		ExcCodeE2M	<=	ExcCodeF2D;
 			else if(AdEL_E)		ExcCodeE2M 	<=	`AdEL;
@@ -565,13 +582,12 @@ module CPU(
 			else if(RI_E)		ExcCodeE2M	<=	`RI;
 			else if(OV_E)		ExcCodeE2M	<=	`OV;
 			else				ExcCodeE2M	<=	5'd0;
+			BD_E2M		<=	BD_D2E;
 		end
 	end
 	
-	logic   [31:0]  pcE2M;
-	logic   [31:0]  instrE2M;
 	always@(posedge clk) begin // pc, instrution
-		if(reset) begin
+		if(reset || req) begin
 			pcE2M     <= 32'd0;
 			instrE2M  <= 32'd0;
 		end
@@ -581,7 +597,7 @@ module CPU(
 		end
 	end
 	always@(posedge clk) begin // aNew, tNew, vNew
-		if(reset) begin
+		if(reset || req) begin
 			aNewE2M   <= 5'd0;
 			tNewE2M   <= 2'd0;
 			vNewE2M   <= 32'd0; 
@@ -592,10 +608,8 @@ module CPU(
 			vNewE2M   <= vNewE;
 		end
 	end
-	logic   [31:0]  v2E2M;
-	logic   [31:0]  vE2M;
 	always@(posedge clk) begin // other register
-		if(reset) begin
+		if(reset || req) begin
 			v2E2M <= 32'd0;
 			vE2M  <= 32'd0;
 		end
@@ -608,8 +622,6 @@ module CPU(
 	// Memory (M)
 	// Memory (M)
 
-	logic   [4:0]   a2M;
-	logic   [31:0]  v2M;
 	assign  a2M    = instrE2M[`A2];
 	always@(*) begin // trans
 		if(a2M != 0) begin
@@ -621,26 +633,21 @@ module CPU(
 		else v2M = v2E2M;
 	end
 
-	logic   [31:0]  aDmM;
 	assign  aDmM 	= vE2M;
-	logic   [31:0]  wDataDmM;
-	logic   [3:0]   wByteEnDmM;
 	always@(*) begin
 		if(`SB_M) begin
-			wByteEnDmM 	= 	aDmM[1:0] 	== 	2'b00 	? 	4'b0001 :
-							aDmM[1:0] 	==	2'b01 	? 	4'b0010 :
-							aDmM[1:0] 	==	2'b10 	? 	4'b0100 :
-														4'b1000 ;
-			wDataDmM 	= 	aDmM[1:0] 	== 	2'b00 	? 	{24'b0	, v2M[7:0]} 			:
-							aDmM[1:0] 	== 	2'b01 	? 	{16'b0	, v2M[7:0], 	8'b0 } 	:
-							aDmM[1:0] 	== 	2'b10 	? 	{8'b0 	, v2M[7:0], 	16'b0} 	:
-														{v2M[7:0], 24'b0}				;
+			case(aDmM[1:0])
+				2'b00 : begin wByteEnDmM = 4'b0001; wDataDmM = {24'b0, v2M[7:0]};		end
+				2'b01 : begin wByteEnDmM = 4'b0010; wDataDmM = {16'b0, v2M[7:0], 8'b0 };end
+				2'b10 : begin wByteEnDmM = 4'b0100; wDataDmM = {8'b0, v2M[7:0], 16'b0};	end
+				2'b11 : begin wByteEnDmM = 4'b1000; wDataDmM = {v2M[7:0], 24'b0};		end
+			endcase
 		end
 		else if(`SH_M) begin
-			wByteEnDmM 	= 	aDmM[1]	==	1'b0	? 	4'b0011 :
-													4'b1100 ;
-			wDataDmM 	=	aDmM[1]	== 	1'b0	? 	{16'b0	, v2M[15:0]}	:
-													{v2M[15:0], 16'b0}		;
+			case(aDmM[1])
+				1'b0 : begin wByteEnDmM = 4'b0011; wDataDmM = {16'b0	, v2M[15:0]};	end
+				1'b1 : begin wByteEnDmM = 4'b1100; wDataDmM = {v2M[15:0], 16'b0};		end
+			endcase
 		end
 		else if(`SW_M) begin
 			wByteEnDmM 	= 4'b1111;
@@ -668,49 +675,38 @@ module CPU(
 	assign	AdEL_M		= 	(`LW_M && (aDmM[1:0] != 2'b00))									// LW 取数地址未与 4 字节对齐。
 						||	(`LH_M && (aDmM[0] != 1'b0))									// LH 取数地址未与 2 字节对齐。
 						||	((`LB_M || `LH_M) && (DEV0 || DEV1))							// LB, LH 取 Timer 寄存器的值。
-						|| 	((`LB_M || `LH_M || LW_M ) && !(DM || DEV0 || DEV1 || DEVINT));	// 取数地址超出 DM、Timer0、Timer1、中断发生器的范围。
+						|| 	((`LB_M || `LH_M || `LW_M ) && !(DM || DEV0 || DEV1 || DEVINT));	// 取数地址超出 DM、Timer0、Timer1、中断发生器的范围。
 	assign	AdES_M		=	(`SW_M && (aDmM[1:0] != 2'b00))									// SW 存数地址未 4 字节对齐。
 						||	(`SH_M && (aDmM[0] != 1'b0))									// SH 存数地址未 2 字节对齐。
 						||	((`SB_M || `SH_M) && (DEV0 || DEV1))							// SB, SH 存 Timer 寄存器的值。
 						||	(`SW_M && (DEV0 || DEV1) && aDmM[3:2] == 2'b10)					// 向计时器的 Count 寄存器存值。
-						||	((`SB_M || `SH_M || SW_M ) && !(DM || DEV0 || DEV1 || DEVINT));	// 存数地址超出 DM、Timer0、Timer1、中断发生器的范围。
+						||	((`SB_M || `SH_M || `SW_M ) && !(DM || DEV0 || DEV1 || DEVINT));	// 存数地址超出 DM、Timer0、Timer1、中断发生器的范围。
 	assign	Syscall_M	= `SYSCALL_M;
 	assign	RI_M		= 0;
 	assign	OV_M		= 0;
 	
-	logic	[4:0]	CP0Addr;
-	logic	[31:0]	CP0In;
-	logic	[31:0]	VPC;
-	logic			BD;
-	logic	[4:0]	ExcCode;
-	logic			EXLClr;
-	assign	CP0Addr	= instrE2M[`A3];
-	assign	CP0In	= v2M;
-	assign	VPC		= pcE2M;
-	assign	BD		= BD_E2M;
-	always@(*) begin	// ExcCode
-		if(ExcCodeE2M)		ExcCode	=	ExcCodeF2D;
-		else if(AdEL_M)		ExcCode =	`AdEL;
-		else if(AdES_M)		ExcCode	=	`AdES;
-		else if(Syscall_M)	ExcCode	=	`Syscall;
-		else if(RI_M)		ExcCode	=	`RI;
-		else if(OV_M)		ExcCode	=	`OV;
-		else				ExcCode	=	5'd0;
+	assign	aCP0M		= instrE2M[`A3];
+	assign	wDataCP0M	= v2M;
+	assign	vpc			= pcE2M;
+	assign	BD			= BD_E2M;
+	always@(*) begin
+		if(ExcCodeE2M)		ExcCodeM	=	ExcCodeE2M;
+		else if(AdEL_M)		ExcCodeM	=	`AdEL;
+		else if(AdES_M)		ExcCodeM	=	`AdES;
+		else if(Syscall_M)	ExcCodeM	=	`Syscall;
+		else if(RI_M)		ExcCodeM	=	`RI;
+		else if(OV_M)		ExcCodeM	=	`OV;
+		else				ExcCodeM	=	5'd0;
 	end
 	assign	EXLClr	= `ERET_M;
+	assign	wEnCP0M	= `MTC0_M;
+	assign	epcEmM	= `ERET_M;
 
-	logic			CP0En;
-	assign	CP0En	= `MTC0_M;
-	
-	logic	[31:0]	CP0Out;
-	logic	[31:0]	EPC;
-	logic			Req;
 	CP0 CP0_0(.clk(clk), .reset(reset),
-		.CP0En(CP0En), .CP0Addr(CP0Addr), .CP0In(CP0In), .CP0Out(CP0Out),
-		.VPC(VPC), .BDIn(BD), .ExcCodeIn(ExcCode), .HWInt(HWInt), .EXLClr(EXLClr),
-		.EPCOut(EPC), .Req(Req));
+		.CP0En(wEnCP0M), .CP0Addr(aCP0M), .CP0In(wDataCP0M), .CP0Out(vCP0M),
+		.VPC(vpc), .BDIn(BD), .ExcCodeIn(ExcCodeM), .HWInt(HWInt), .EXLClr(EXLClr),
+		.EPCOut(epc), .Req(req));
 
-	logic   [31:0]  vM;
 	always@(*) begin
 		if(`LB_M)
 			vM	= 	aDmM[1:0] 	== 	2'b00 	? 	{{24{m_data_rdata[7]}} , m_data_rdata[7:0]}   : 
@@ -723,22 +719,18 @@ module CPU(
 		else if(`LW_M)
 			vM	= 	m_data_rdata;
 		else if(`MFC0_M)
-			vM	= 	CP0Out;
+			vM	= 	vCP0M;
 		else
 			vM	= 	vE2M;
 	end
 
-	logic   [31:0]  vNewM;
 	assign  vNewM = (`LB_M || `LH_M || `LW_M || `MFC0_M) ? vM : vNewE2M;
 	
 	// Memory to Writeback (M2W)
 	// Memory to Writeback (M2W)
 	
-	/* Declare move to D
-	logic   [31:0]  pcM2W; */
-	logic   [31:0]  instrM2W;
 	always@(posedge clk) begin // pc, instruction
-		if(reset) begin
+		if(reset || req) begin
 			pcM2W     <= 32'd0;
 			instrM2W  <= 32'd0;
 		end
@@ -748,7 +740,7 @@ module CPU(
 		end
 	end
 	always@(posedge clk) begin // aNew, tNew, vNew
-		if(reset) begin
+		if(reset || req) begin
 			aNewM2W   <= 5'd0;
 			tNewM2W   <= 2'd0;
 			vNewM2W   <= 32'd0;
@@ -759,21 +751,14 @@ module CPU(
 			vNewM2W   <= vNewM;
 		end
 	end
-	logic   [31:0]  vM2W;
 	always@(posedge clk) begin // other register
-		if(reset)
-			vM2W  <= 32'd0;
-		else
-			vM2W  <= vM;
+		if(reset || req)	vM2W  <= 32'd0;
+		else				vM2W  <= vM;
 	end
 	
 	// Writeback (W)
 	// Writeback (W)
 	
-	/* Declare move to D
-	logic   [4:0]   aGrfW;
-	logic   [31:0]  wDataGrfW;
-	logic           wEnGrfW; */
 	always@(*) begin
 		if(`ADD_W || `SUB_W || `AND_W || `OR_W || `SLT_W || `SLTU_W || `MFHI_W || `MFLO_W) begin
 			aGrfW      = instrM2W[`A3];

@@ -21,10 +21,20 @@
 
 
 module NPC(
-    input   [31:0]  pc,
-    input   [31:0]  jpc,
-    input           jpcEn,
-    output  [31:0]  npc
-    );
-    assign npc = jpcEn ? jpc : (pc + 32'h00000004);
+	input   [31:0]  pc,
+	input   [31:0]  jpc,
+	input           jpcEn,
+	input   [31:0]  epc,
+	input           epcEn,
+	input 			req,
+	output  [31:0]  npc
+	);
+	logic	[31:0]	NPC;
+	assign	npc = NPC;
+	always@(*) begin
+		if(req)			NPC = 32'h00004180;
+		else if(epcEn)	NPC = epc;
+		else if(jpcEn)	NPC = jpc;
+		else			NPC = pc + 32'h00000004;
+	end
 endmodule
