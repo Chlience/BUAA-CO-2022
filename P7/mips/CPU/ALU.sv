@@ -26,7 +26,7 @@ module ALU(
 	input   [15:0]  imm16,  // immediate number
 	input   [3:0]   opt,    // option
 	output  [31:0]  res,    // result
-	output          overf   // overflow
+	output          ov   	// overflow
 	);
 	
 	logic   [32:0]  result;
@@ -80,7 +80,7 @@ module ALU(
 			end
 		endcase
 	end
-	assign  res     = result[31:0];
-	assign  overf   = overflow;
+	assign  res		= result[31:0];
+	assign  ov		= overflow;
 	
 endmodule

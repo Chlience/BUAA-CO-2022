@@ -52,7 +52,7 @@ module CP0 (
 		else begin
 			`IP				<= HWInt;	// 待决的（硬件）中断，照抄硬件信号
 			if(Req) begin	// 发生异常 保存状态
-				`ExcCode	<= ExcCodeIn;
+				`ExcCode	<= IntReq ? 0 : ExcCodeIn;
 				`BD			<= BDIn;
 				EPC			<= BDIn ? VPC - 4 : VPC;
 				`EXL		<= 1;	// 置高异常级，进入核心态并不再响应中断

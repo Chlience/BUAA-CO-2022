@@ -9,6 +9,12 @@
 `define OPTION2     5:0
 `define SPECIAL     (6'b000000)
 
+`define NOP 		(instrF == 32'b0)
+`define NOP_D		(instrF2D == 32'b0)
+`define NOP_E		(instrD2E == 32'b0)
+`define NOP_M		(instrE2M == 32'b0)
+`define NOP_W		(instrM2W == 32'b0)
+
 `define ADD			(6'b100000)    // special
 `define ADD_F		((instrF[`OPTION1]   == `SPECIAL) && (instrF[`OPTION2]   == `ADD))     
 `define ADD_D		((instrF2D[`OPTION1] == `SPECIAL) && (instrF2D[`OPTION2] == `ADD))
@@ -107,8 +113,6 @@
 `define LUI_M		(instrE2M[`OPTION1] == `LUI)
 `define LUI_W		(instrM2W[`OPTION1] == `LUI)
 
-// lb, lh, lw, sb, sh, sw
-
 `define LB			(6'b100000)
 `define LB_F		(instrF[`OPTION1]   == `LB)
 `define LB_D		(instrF2D[`OPTION1] == `LB)
@@ -143,7 +147,7 @@
 `define SH_E		(instrD2E[`OPTION1] == `SH)
 `define SH_M		(instrE2M[`OPTION1] == `SH)
 `define SH_W		(instrM2W[`OPTION1] == `SH)
-                    
+					
 `define SW			(6'b101011)
 `define SW_F        (instrF[`OPTION1]   == `SW)
 `define SW_D        (instrF2D[`OPTION1] == `SW)
@@ -223,3 +227,24 @@
 `define MTC0_E		((instrD2E[`OPTION1] == `COP0) && (instrD2E[`COP0FUNCT] == `MTC0))
 `define MTC0_M		((instrE2M[`OPTION1] == `COP0) && (instrE2M[`COP0FUNCT] == `MTC0))
 `define MTC0_W		((instrM2W[`OPTION1] == `COP0) && (instrM2W[`COP0FUNCT] == `MTC0))
+
+`define ERET		(6'b011000)
+`define ERET_F		((instrF[`OPTION1]   == `COP0) && (instrF[`OPTION2]   == `ERET))     
+`define ERET_D		((instrF2D[`OPTION1] == `COP0) && (instrF2D[`OPTION2] == `ERET))
+`define ERET_E		((instrD2E[`OPTION1] == `COP0) && (instrD2E[`OPTION2] == `ERET))
+`define ERET_M		((instrE2M[`OPTION1] == `COP0) && (instrE2M[`OPTION2] == `ERET))
+`define ERET_W		((instrM2W[`OPTION1] == `COP0) && (instrM2W[`OPTION2] == `ERET))
+
+`define SYSCALL		(6'b001100)
+`define SYSCALL_F	((instrF[`OPTION1]   == `SPECIAL) && (instrF[`OPTION2]   == `SYSCALL))     
+`define SYSCALL_D	((instrF2D[`OPTION1] == `SPECIAL) && (instrF2D[`OPTION2] == `SYSCALL))
+`define SYSCALL_E	((instrD2E[`OPTION1] == `SPECIAL) && (instrD2E[`OPTION2] == `SYSCALL))
+`define SYSCALL_M	((instrE2M[`OPTION1] == `SPECIAL) && (instrE2M[`OPTION2] == `SYSCALL))
+`define SYSCALL_W	((instrM2W[`OPTION1] == `SPECIAL) && (instrM2W[`OPTION2] == `SYSCALL))
+
+`define AdEL        (5'd4)
+`define AdES		(5'd5)
+`define Syscall		(5'd8)
+`define RI			(5'd10)
+`define OV			(5'd12)
+`define DEF_D       (`NOP_D || `ADD_D || `SUB_D || `AND_D || `OR_D || `SLT_D || `SLTU_D || `ADDI_D || `ANDI_D || `ORI_D || `BEQ_D || `BNE_D || `JAL_D || `JR_D || `LUI_D || `LB_D || `LH_D || `LW_D || `SB_D || `SH_D || `SW_D || `MULT_D || `MULTU_D || `DIV_D || `DIVU_D || `MFHI_D || `MFLO_D || `MTHI_D || `MTLO_D || `MFC0_D || `MTC0_D || `ERET_D || `SYSCALL_D)
