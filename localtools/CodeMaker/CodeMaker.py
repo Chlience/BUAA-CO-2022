@@ -296,9 +296,6 @@ def testForward(regs, rams, offsetBefore):
         instrList += instrNew2(regs, rams, offsetBefore + len(instrList), 31)
         instrList += [sw(reg, randRam(rams), 0)]
 
-    # 计算地址的几个冲突没测 beq, jr, lw(addr), sw(addr)
-    # 欢迎补充
-
     return instrList
 
 def makeCode():
@@ -312,6 +309,8 @@ def makeCode():
     instrList += fullRams(regs, rams)
     instrList += testSaveAndLoad(regs, rams)
      
+
+
     instrList += fullRegs(regs)
     instrList += testBranch(regs)
     instrList += clearRams(rams)
@@ -324,4 +323,3 @@ def makeCode():
 if __name__ == "__main__":
     code = makeCode()
     writeCode(code)
-    
