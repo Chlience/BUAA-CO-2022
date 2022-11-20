@@ -11,7 +11,7 @@ def readStd(file,linenum):
             searchans = re.search(r"@\s*([0-9a-f]*)\s*:\s*([*$])\s*([0-9a-f]*)\s*<=\s*([0-9a-f]*)",line,re.I)
             if searchans != None :
                 parts = searchans.groups()
-                if all(i!="" for i in parts) :
+                if len(parts) and all(i!="" for i in parts) :
                     return line,linenum,parts
 
 def readCheck(file,linenum):
@@ -24,8 +24,11 @@ def readCheck(file,linenum):
             searchans = re.search(r"\s*([0-9]*)\s*@\s*([0-9a-f]*)\s*:\s*([*$])\s*([0-9a-f]*)\s*<=\s*([0-9a-f]*)",line,re.I)
             if searchans != None :
                 parts = searchans.groups()
-                if all(i!="" for i in parts) :
+                if( parts[2]=="*" or parts[3]!="0") and len(parts)==5 and all(i!="" for i in parts) :
                     return line,linenum,parts[0],parts[1:]
+                if parts[3]=='0' and parts[2]=="$":
+                    if len(parts)==5 and all(i!="" for i in parts) and parts[4]!="00000000":
+                        print (f"[Warning: sample line = {linenum}]\n\t\tthe value write to reg $0 "+parts[4]+" is not equal to zero")
 
 def skipcheck(stdfile,stdori,stdline,stdans,checkori,checkfile,checkline,checktime,checkans) :
     std = []
@@ -47,6 +50,8 @@ def skipcheck(stdfile,stdori,stdline,stdans,checkori,checkfile,checkline,checkti
     return stdori,stdline,stdans,checkori,checkline,nexttime,checkans
     
 
+
+
 if __name__=='__main__':
     if len(sys.argv)<3 :
         print("we need two files!!!")
@@ -62,23 +67,27 @@ if __name__=='__main__':
             while True:
                 stdori,stdline,stdans = readStd(stdfile,stdline)
                 checkori,checkline,timecheck,checkans = readCheck(checkfile,checkline)
+
                 if checkori == False and stdori == False :
                     print ("stadandard file read over")
                     print ("sample file read over")
                     break
                 elif checkori == False :
                     print ("sample file read over")
+                    print (f"stdfile endline {stdline}")
                     print ("[Waring]:\n\t\tthe sample file output too few")
                     break
                 elif stdori == False :
                     print ("stadandard file read over")
+                    print (f"samplefile endline {checkline}")
                     print ("[Warning]:\n\t\tthe sample file output too much")
                     break
+
                 if stdans != checkans : 
                     if stdans[0] != checkans[0]:
                         while stdans != checkans and stdans[0] != checkans[0]:
                             stdori,stdline,stdans,checkori,checkline,timecheck,checkans = skipcheck(stdfile,stdori,stdline,stdans,checkori,checkfile,checkline,timecheck,checkans)
-                            if stdori == "Error" : 
+                            if stdori == "Error" :
                                 exit()
                             if checkori == False and stdori == False :
                                 print ("stadandard file read over")
@@ -86,10 +95,12 @@ if __name__=='__main__':
                                 break
                             elif checkori == False :
                                 print ("sample file read over")
+                                print (f"stdfile endline {stdline}")
                                 print ("[Waring]:\n\t\tthe sample file output too few")
                                 break
                             elif stdori == False :
                                 print ("stadandard file read over")
+                                print (f"samplefile endline {checkline}")
                                 print ("[Warning]:\n\t\tthe sample file output too much")
                                 break
                         if stdans != checkans and stdans[0] == checkans[0]:
@@ -98,6 +109,7 @@ if __name__=='__main__':
                     else:
                         print (f"[Error  stdandredLine={stdline} sampleLine={checkline}]\nstdans:{stdori}\nsample\t{checkori}")
                         exit()
+                
                 if checkori == False or stdori == False : break
 
     print("\t\t>>>the same<<<")
