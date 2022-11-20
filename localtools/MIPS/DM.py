@@ -32,7 +32,7 @@ class DM:
             addr >>= 2
             select = 0xffffffff ^ (0xff<<(shift*8))
             cls.__datamem[addr] = (cls.__datamem[addr]&select)|((data&0xff)<<(shift*8))
-        print(f"@{PC._value:0>8x}: *{addr:0>8x} <= {cls.__datamem[addr]:0>8x}",end="")
+        print(f"@{PC._value:0>8x}: *{addr<<2:0>8x} <= {cls.__datamem[addr]:0>8x}",end="")
         PC.next()
 
     def __signext(num,bytenum):

@@ -10,8 +10,18 @@ def readFile(filepath):
 
 if __name__ == '__main__':
     codePath = sys.argv[1]
+    sys.argv.count
+    stop = False
+    if(len(sys.argv)==3) :
+        maxpathnum = sys.argv[2]
+        stop = True
     code = readFile(codePath)
     PC.loadInstruct(code)
     PC.loadMachineCode(code)
-    while PC._endsignal!=True :
-        ExCute.run(PC.getInstruct())
+    if stop :
+        while PC._endsignal!=True and maxpathnum > 0:
+            ExCute.run(PC.getInstruct())
+            maxpathnum -= 1
+    else :
+        while PC._endsignal!=True :
+            ExCute.run(PC.getInstruct())
