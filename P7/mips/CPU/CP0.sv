@@ -32,9 +32,11 @@ module CP0 (
 	logic	[31:0]	PRId;	// 15
 
 	logic	IntReq, ExcReq;
-	assign	IntReq 	= ~`EXL && (|(`IM & HWInt)) && `IE;	// 是否发生被接受的外部中断
-	assign	ExcReq 	= (|ExcCodeIn);						// 是否发生除了中断之外的异常
-	assign	Req		= IntReq || ExcReq;					// 是否发生异常
+	assign	IntReq 	= (~`EXL) && (|(`IM & HWInt)) && `IE;	// 是否发生被接受的外部中断
+	assign	ExcReq 	= (|ExcCodeIn);							// 是否发生除了中断之外的异常
+	assign	Req		= IntReq || ExcReq;						// 是否发生异常
+
+	assign	EPCOut	= EPC;
 
 	assign	CP0Out	=	CP0Addr == 32'd12 ? SR		:
 						CP0Addr == 32'd13 ? Cause	:

@@ -230,7 +230,7 @@ module CPU(
 	// Fetch to Decode (F2D)
 
 	always@(posedge clk) begin
-		if(reset || req) begin
+		if(reset || req || (`ERET_D || `ERET_E || `ERET_M)) begin
 			ExcCodeF2D	<=	5'd0;
 			BD_F2D		<=	5'd0;
 		end
@@ -246,7 +246,7 @@ module CPU(
 	end
 	
 	always@(posedge clk) begin // pc, instruction
-		if(reset || req || (`ERET_D || `ERET_E)) begin
+		if(reset || req || (`ERET_D || `ERET_E || `ERET_M)) begin
 			pcF2D       <= 32'd0;
 			instrF2D    <= 32'd0;
 		end
@@ -700,12 +700,12 @@ module CPU(
 	end
 	assign	EXLClr	= `ERET_M;
 	assign	wEnCP0M	= `MTC0_M;
-	assign	epcEmM	= `ERET_M;
+	assign	epcEnM	= `ERET_M;
 
 	CP0 CP0_0(.clk(clk), .reset(reset),
 		.CP0En(wEnCP0M), .CP0Addr(aCP0M), .CP0In(wDataCP0M), .CP0Out(vCP0M),
 		.VPC(vpc), .BDIn(BD), .ExcCodeIn(ExcCodeM), .HWInt(HWInt), .EXLClr(EXLClr),
-		.EPCOut(epc), .Req(req));
+		.EPCOut(epcM), .Req(req));
 
 	always@(*) begin
 		if(`LB_M)

@@ -57,7 +57,7 @@ module mips_txt;
 		clk <= 0;
 		reset <= 1;
 		interrupt <= 0;
-		#12 reset <= 0;
+		#20 reset <= 0;
 	end
 
 	integer i;
@@ -70,12 +70,10 @@ module mips_txt;
 
 	assign m_data_rdata = data[(m_data_addr >> 2) % 5120];
 	assign i_inst_rdata = inst[((i_inst_addr - 32'h3000) >> 2) % 5120];
-    integer file;
+
 	initial begin
-        file = $fopen("/home/chlience/cpu_sv.out");
-        for (i = 0; i < 4096; i = i + 1) data[i] = 0;
-        for (i = 0; i < 5120; i = i + 1) inst[i] = 0;
-        $readmemh("/home/chlience/code.txt", inst);
+		$readmemh("/home/chlience/code.txt", inst);
+		for (i = 0; i < 5120; i = i + 1) data[i] <= 0;
 	end
 
 	// ----------- For Data Memory -----------
@@ -94,7 +92,6 @@ module mips_txt;
 		else if (|m_data_byteen && fixed_addr >> 2 < 4096) begin
 			data[fixed_addr >> 2] <= fixed_wdata;
 			$display("%d@%h: *%h <= %h", $time, m_inst_addr, fixed_addr, fixed_wdata);
-            $fdisplay(file, "%d@%h: *%h <= %h", $time, m_inst_addr, fixed_addr, fixed_wdata);
 		end
 	end
 
@@ -104,11 +101,58 @@ module mips_txt;
 		if (~reset) begin
 			if (w_grf_we && (w_grf_addr != 0)) begin
 				$display("%d@%h: $%d <= %h", $time, w_inst_addr, w_grf_addr, w_grf_wdata);
-                $fdisplay(file, "%d@%h: $%d <= %h", $time, w_inst_addr, w_grf_addr, w_grf_wdata);
 			end
 		end
 	end
 
-	always #5 clk <= ~clk;
+	// ----------- For Interrupt -----------
+
+	wire [31:0] fixed_macroscopic_pc;
+
+	assign fixed_macroscopic_pc = macroscopic_pc & 32'hfffffffc;
+
+	parameter delay_pc = 32'h0000301C;
+
+	integer delay_count;
+	integer needInterrupt;
+
+	initial begin
+		delay_count = 0;
+		needInterrupt = 0;
+
+		$display("#delay@%h",delay_pc-4);
+		$display("#interrupt@1");
+	end
+
+	always @(negedge clk) begin
+		if (reset) begin
+			needInterrupt = 0;
+			interrupt = 0;
+		end
+		else begin
+			if (interrupt) begin
+				if (|m_int_byteen && (m_int_addr & 32'hfffffffc) == 32'h7f20) begin
+					interrupt = 0;
+				end
+			end
+			else if (needInterrupt) begin
+				needInterrupt = 0;
+				interrupt = 1;
+			end
+			else begin
+				case (fixed_macroscopic_pc)
+					delay_pc:
+						begin
+							if (delay_count == 0) begin
+								delay_count = 1;
+								interrupt = 1;
+							end
+						end
+				endcase
+			end
+		end
+	end
+
+	always #2 clk <= ~clk;
 
 endmodule
