@@ -92,17 +92,20 @@ if __name__=='__main__':
                             if checkori == False and stdori == False :
                                 print ("stadandard file read over")
                                 print ("sample file read over")
-                                break
+                                print("\t\t>>>the same<<<")
+                                exit()
                             elif checkori == False :
                                 print ("sample file read over")
                                 print (f"stdfile endline {stdline}")
                                 print ("[Waring]:\n\t\tthe sample file output too few")
-                                break
+                                print("\t\t>>>the same<<<")
+                                exit()
                             elif stdori == False :
                                 print ("stadandard file read over")
                                 print (f"samplefile endline {checkline}")
                                 print ("[Warning]:\n\t\tthe sample file output too much")
-                                break
+                                print("\t\t>>>the same<<<")
+                                exit()
                         if stdans != checkans and stdans[0] == checkans[0]:
                             print (f"[Error  stdandredLine={stdline} sampleLine={checkline}]\nstdans:{stdori}\nsample\t{checkori}")
                             exit()
