@@ -72,7 +72,7 @@ module mips_txt;
 	assign i_inst_rdata = inst[((i_inst_addr - 32'h3000) >> 2) % 5120];
 
 	initial begin
-		$readmemh("/home/chlience/code.txt", inst);
+		$readmemh("code.txt", inst);
 		for (i = 0; i < 5120; i = i + 1) data[i] <= 0;
 	end
 
@@ -101,54 +101,6 @@ module mips_txt;
 		if (~reset) begin
 			if (w_grf_we && (w_grf_addr != 0)) begin
 				$display("%d@%h: $%d <= %h", $time, w_inst_addr, w_grf_addr, w_grf_wdata);
-			end
-		end
-	end
-
-	// ----------- For Interrupt -----------
-
-	wire [31:0] fixed_macroscopic_pc;
-
-	assign fixed_macroscopic_pc = macroscopic_pc & 32'hfffffffc;
-
-	parameter delay_pc = 32'h0000301C;
-
-	integer delay_count;
-	integer needInterrupt;
-
-	initial begin
-		delay_count = 0;
-		needInterrupt = 0;
-
-		$display("#delay@%h",delay_pc-4);
-		$display("#interrupt@1");
-	end
-
-	always @(negedge clk) begin
-		if (reset) begin
-			needInterrupt = 0;
-			interrupt = 0;
-		end
-		else begin
-			if (interrupt) begin
-				if (|m_int_byteen && (m_int_addr & 32'hfffffffc) == 32'h7f20) begin
-					interrupt = 0;
-				end
-			end
-			else if (needInterrupt) begin
-				needInterrupt = 0;
-				interrupt = 1;
-			end
-			else begin
-				case (fixed_macroscopic_pc)
-					delay_pc:
-						begin
-							if (delay_count == 0) begin
-								delay_count = 1;
-								interrupt = 1;
-							end
-						end
-				endcase
 			end
 		end
 	end

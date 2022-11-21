@@ -214,7 +214,7 @@ module CPU(
 	// Fetch (F)
 	// Fetch (F)
 	
-	assign  npcEn  = ~ Stall;
+	assign  npcEn  = (~ Stall) || (req);
 	PC  PC_0(.clk(clk), .reset(reset), .pc(pcF), .npc(npc), .npcEn(npcEn));
 	assign  instrF      = i_inst_rdata;
 	assign  i_inst_addr = pcF;
@@ -234,7 +234,7 @@ module CPU(
 			ExcCodeF2D	<=	5'd0;
 			BD_F2D		<=	5'd0;
 		end
-		else begin
+		else if(~ Stall) begin
 			if(AdEL_F)			ExcCodeF2D 	<=	`AdEL;
 			else if(AdES_F)		ExcCodeF2D	<=	`AdES;
 			else if(Syscall_F)	ExcCodeF2D	<=	`Syscall;
@@ -420,6 +420,7 @@ module CPU(
 		end
 		else if(Stall) begin
 			ExcCodeD2E	<=	5'd0;
+			BD_D2E		<=	BD_F2D;
 		end
 		else begin
 			if(ExcCodeF2D)		ExcCodeD2E	<=	ExcCodeF2D;
@@ -438,6 +439,7 @@ module CPU(
 			instrD2E    <= 32'd0;
 		end
 		else if(Stall) begin
+			pcD2E       <= pcF2D;
 			instrD2E    <= 32'd0;
 		end
 		else begin
@@ -635,7 +637,8 @@ module CPU(
 
 	assign  aDmM 	= vE2M;
 	always@(*) begin
-		if(`SB_M) begin
+		if(req)			begin wByteEnDmM = 4'b0000; wDataDmM = 32'b0;					end
+		else if(`SB_M) begin
 			case(aDmM[1:0])
 				2'b00 : begin wByteEnDmM = 4'b0001; wDataDmM = {24'b0, v2M[7:0]};		end
 				2'b01 : begin wByteEnDmM = 4'b0010; wDataDmM = {16'b0, v2M[7:0], 8'b0 };end
