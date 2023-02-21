@@ -1,4 +1,4 @@
-# BUAA-CO
+# BUAA-CO-2022
 北京航空航天大学 CO 课程作业
 
 ## TODO
